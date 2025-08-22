@@ -9,8 +9,8 @@ from typing import Dict, Tuple
 from torch import nn
 from torch.nn import functional as F
 
-from dinov3.eval.segmentation.models.heads.pixel_decoder import MSDeformAttnPixelDecoder
 from dinov3.eval.segmentation.models.heads.mask2former_transformer_decoder import MultiScaleMaskedTransformerDecoder
+from dinov3.eval.segmentation.models.heads.pixel_decoder import MSDeformAttnPixelDecoder
 
 
 class Mask2FormerHead(nn.Module):
@@ -26,6 +26,7 @@ class Mask2FormerHead(nn.Module):
     ):
         """
         NOTE: this interface is experimental.
+
         Args:
             input_shape: shapes (channels and stride) of the input features
             num_classes: number of classes to predict
@@ -33,7 +34,7 @@ class Mask2FormerHead(nn.Module):
             loss_weight: loss weight
             ignore_value: category id to be ignored during training.
             transformer_predictor: the transformer decoder that makes prediction
-            transformer_in_feature: input feature name to the transformer_predictor
+            transformer_in_feature: input feature name to the transformer_predictor.
         """
         super().__init__()
         orig_input_shape = input_shape

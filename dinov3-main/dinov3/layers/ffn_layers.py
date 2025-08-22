@@ -11,7 +11,7 @@ from torch import Tensor, nn
 from dinov3.utils import cat_keep_shapes, uncat_with_shapes
 
 
-class ListForwardMixin(object):
+class ListForwardMixin:
     def forward(self, x: Tensor):
         raise NotImplementedError
 

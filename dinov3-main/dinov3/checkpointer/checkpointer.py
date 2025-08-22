@@ -51,7 +51,7 @@ class CheckpointRetentionPolicy(Enum):
 
     @property
     def keep_filters(self) -> Set[str]:
-        """Files that match these patterns are not deleted by cleanup"""
+        """Files that match these patterns are not deleted by cleanup."""
         if self == CheckpointRetentionPolicy.LAST:
             return set(["final"])
         if self == CheckpointRetentionPolicy.BEST:
@@ -64,9 +64,7 @@ class CheckpointRetentionPolicy(Enum):
 
     @property
     def max_to_keep(self) -> int | None:
-        """
-        maximum "periodic" checkpoints to keep concurrently, ie. saved with `step` and not `save`. `None` for keep all
-        """
+        """Maximum "periodic" checkpoints to keep concurrently, ie. saved with `step` and not `save`. `None` for keep all."""
         if self == CheckpointRetentionPolicy.ALL:
             return None
         return 1
@@ -171,7 +169,7 @@ def register_dont_save_hooks(module: torch.nn.Module, dont_save: Sequence[str]):
     Registers save/load state dict hooks such that the weights in `dont_save` are not persisted in the checkpoint.
 
     Typical use case: a classification model composed of a frozen backbone and a trainable head.
-    If the frozen backbone is loaded from torch hub, it does't make sense to save a copy of it in each checkpoint.
+    If the frozen backbone is loaded from torch hub, it doesn't make sense to save a copy of it in each checkpoint.
     """
 
     def state_dict_post_hook(module, state_dict, prefix, local_metadata):
@@ -314,7 +312,7 @@ def init_model_from_checkpoint_for_evals(
     # remove `backbone.` prefix induced by multicrop wrapper
     state_dict = {k.replace("backbone.", ""): v for k, v in state_dict.items()}
     msg = model.load_state_dict(state_dict, strict=False)
-    logger.info("Pretrained weights found at {} and loaded with msg: {}".format(pretrained_weights, msg))
+    logger.info(f"Pretrained weights found at {pretrained_weights} and loaded with msg: {msg}")
 
 
 def cleanup_checkpoint(ckpt_dir: str, checkpoint_retention_policy: CheckpointRetentionPolicy):
@@ -332,7 +330,7 @@ def cleanup_checkpoint(ckpt_dir: str, checkpoint_retention_policy: CheckpointRet
     |   |-- 299/
             |--checkpoint.pth or dcp_sharded_checkpoint_dir
     |   |-- final/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
+            |--checkpoint.pth or dcp_sharded_checkpoint_dir.
     """
     ckpt_dir = Path(ckpt_dir)
     if not ckpt_dir.is_dir():

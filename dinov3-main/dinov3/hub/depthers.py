@@ -7,17 +7,18 @@ from enum import Enum
 from typing import Optional, Tuple
 
 import torch
-from dinov3.eval.dense.depth.models import build_depther
-from urllib.parse import urlparse
-from pathlib import Path
 
-from .utils import DINOV3_BASE_URL
+from dinov3.eval.dense.depth.models import build_depther
+
 from .backbones import (
     Weights as BackboneWeights,
-    dinov3_vitl16,
-    dinov3_vit7b16,
-    convert_path_or_url_to_url,
 )
+from .backbones import (
+    convert_path_or_url_to_url,
+    dinov3_vit7b16,
+    dinov3_vitl16,
+)
+from .utils import DINOV3_BASE_URL
 
 
 class DepthWeights(Enum):

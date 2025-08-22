@@ -91,13 +91,11 @@ def get_cfg_from_args(args: DinoV3SetupArgs, multidistillation=False, strict=Tru
 
 
 def setup_config(args: DinoV3SetupArgs, strict_cfg=True):
-    """
-    Create configs and perform basic setups.
-    """
+    """Create configs and perform basic setups."""
     # Create the cfg with OmegaConf
     cfg = get_cfg_from_args(args, strict=strict_cfg)
     # setup distributed, logging, and random seeds
-    logger.info("\n".join("%s: %s" % (k, str(v)) for k, v in sorted(dict(vars(args)).items())))
+    logger.info("\n".join(f"{k}: {str(v)}" for k, v in sorted(dict(vars(args)).items())))
     # dump config before modifying so it can be reloaded
     if args.output_dir is not None:
         write_config(cfg, args.output_dir)
@@ -206,7 +204,7 @@ def setup_job(
         fix_random_seeds(seed + rank)
 
     logger = logging.getLogger("fairvit")
-    logger.info("git:\n  {}\n".format(get_sha()))
+    logger.info(f"git:\n  {get_sha()}\n")
 
     # Log some python info
     conda_env_name, conda_env_path = get_conda_env()

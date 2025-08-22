@@ -160,7 +160,7 @@ def build_topk_any_match_accuracy_metric(num_classes: int, ks: tuple = (1, 5)):
 class MeanAveragePrecisionVOC2007(MultilabelPrecisionRecallCurve):
     """
     VOC2007 11-points mAP Evaluation defined on page 11 of
-    The PASCAL Visual Object Classes (VOC) Challenge (Everingham et al., 2010)
+    The PASCAL Visual Object Classes (VOC) Challenge (Everingham et al., 2010).
     """
 
     def __init__(self, *args, recall_level_count: int = 11, **kwargs):
@@ -178,7 +178,7 @@ class MeanAveragePrecisionVOC2007(MultilabelPrecisionRecallCurve):
 class AnyMatchAccuracy(Metric):
     """
     This computes an accuracy where an element is considered correctly
-    predicted if one of the predictions is in a list of targets
+    predicted if one of the predictions is in a list of targets.
     """
 
     is_differentiable: bool = False
@@ -256,7 +256,7 @@ class GroupByAnyMatchAccuracy(AnyMatchAccuracy):
         results_dict = {"top-1": global_score}
         for label_name, label_value in self._groupby_labels.items():
             groupby_results = self.groupby_metric(label_value, indices, tp)
-            printable_results = {k: f"{100. * v.item():.4g}" for k, v in groupby_results.items()}
+            printable_results = {k: f"{100.0 * v.item():.4g}" for k, v in groupby_results.items()}
             logger.info(f"Scores by {label_name} {printable_results}\n")
             results_dict = {**results_dict, **groupby_results}
         return results_dict
@@ -316,7 +316,7 @@ class MacroAveragedMeanReciprocalRank(Metric):
 
 
 def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
+    """Computes the accuracy over the k top predictions for the specified values of k."""
     maxk = max(topk)
     batch_size = target.size(0)
     _, pred = output.topk(maxk, 1, True, True)

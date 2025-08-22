@@ -12,7 +12,8 @@ from dinov3.eval.detection.config import DetectionHeadConfig
 from dinov3.eval.detection.models.detr import PostProcess, build_model
 from dinov3.eval.detection.models.position_encoding import PositionEncoding
 
-from .backbones import Weights as BackboneWeights, dinov3_vit7b16, dinov3_vitl16plus, convert_path_or_url_to_url
+from .backbones import Weights as BackboneWeights
+from .backbones import convert_path_or_url_to_url, dinov3_vit7b16, dinov3_vitl16plus
 from .utils import DINOV3_BASE_URL
 
 
@@ -23,7 +24,7 @@ class DetectionWeights(Enum):
 class DetectorWithProcessor(torch.nn.Module):
     """
     takes as input a list of (3, H, W) normalized image tensors and outputs
-    a list of dicts with keys "scores", "labels" and "boxes" (format XYXY)
+    a list of dicts with keys "scores", "labels" and "boxes" (format XYXY).
     """
 
     def __init__(self, detector, postprocessor):

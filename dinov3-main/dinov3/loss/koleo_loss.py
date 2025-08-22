@@ -12,7 +12,7 @@ import dinov3.distributed as dist
 
 
 class KoLeoLoss(nn.Module):
-    """Kozachenko-Leonenko entropic loss regularizer from Sablayrolles et al. - 2018 - Spreading vectors for similarity search"""
+    """Kozachenko-Leonenko entropic loss regularizer from Sablayrolles et al. - 2018 - Spreading vectors for similarity search."""
 
     def __init__(self):
         super().__init__()
@@ -33,7 +33,7 @@ class KoLeoLoss(nn.Module):
     def forward(self, student_output, eps=1e-8):
         """
         Args:
-            student_output (BxD): backbone output of student
+            student_output (BxD): backbone output of student.
         """
         with torch.autocast("cuda", enabled=False):
             student_output = F.normalize(student_output, eps=eps, p=2, dim=-1)
@@ -44,7 +44,7 @@ class KoLeoLoss(nn.Module):
 
 
 class KoLeoLossDistributed(nn.Module):
-    """Kozachenko-Leonenko entropic loss regularizer from Sablayrolles et al. - 2018 - Spreading vectors for similarity search"""
+    """Kozachenko-Leonenko entropic loss regularizer from Sablayrolles et al. - 2018 - Spreading vectors for similarity search."""
 
     def __init__(self, topk=1, loss_group_size: int | None = None):
         super().__init__()
@@ -67,7 +67,7 @@ class KoLeoLossDistributed(nn.Module):
     def forward(self, student_output, eps=1e-8):
         """
         Args:
-            student_output (BxD): backbone output of student
+            student_output (BxD): backbone output of student.
         """
         with torch.autocast("cuda", enabled=False):
             student_output = F.normalize(student_output, eps=eps, p=2, dim=-1)  # local_B x D

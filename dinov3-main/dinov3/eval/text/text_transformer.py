@@ -7,6 +7,7 @@ from typing import Callable, Optional, Tuple
 
 import torch
 import torch.nn as nn
+
 from dinov3.layers import CausalSelfAttentionBlock
 
 
