@@ -16,9 +16,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
 
-"""
-Backbone modules.
-"""
+"""Backbone modules."""
+
 import logging
 from typing import List, Optional, Union
 

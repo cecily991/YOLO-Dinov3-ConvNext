@@ -214,7 +214,7 @@ class ImageNet22k(ExtendedVisionDataset):
                 with GzipFile(fileobj=BytesIO(data)) as g:
                     data = g.read()
         except Exception as e:
-            raise RuntimeError(f"can not retrieve image data for sample {index} " f'from "{class_id}" tarball') from e
+            raise RuntimeError(f'can not retrieve image data for sample {index} from "{class_id}" tarball') from e
 
         return data
 

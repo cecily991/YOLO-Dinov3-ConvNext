@@ -79,9 +79,7 @@ def named_apply(
 
 
 def fix_random_seeds(seed: int = 31):
-    """
-    Fix random seeds.
-    """
+    """Fix random seeds."""
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
@@ -101,7 +99,7 @@ def get_sha() -> str:
         sha = _run(["git", "rev-parse", "HEAD"])
         subprocess.check_output(["git", "diff"], cwd=cwd)
         diff = _run(["git", "diff-index", "HEAD"])
-        diff = "has uncommited changes" if diff else "clean"
+        diff = "has uncommitted changes" if diff else "clean"
         branch = _run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
     except Exception:
         pass

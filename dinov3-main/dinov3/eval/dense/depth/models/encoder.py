@@ -7,8 +7,9 @@ import logging
 from enum import Enum
 from typing import Sequence, Union
 
-from dinov3.eval.dense.depth.models.embed import CenterPadding, StretchToMultiple
 from torch import Tensor, nn
+
+from dinov3.eval.dense.depth.models.embed import CenterPadding, StretchToMultiple
 
 logger = logging.getLogger("fairvit")
 
@@ -33,7 +34,7 @@ def _get_backbone_out_indices(
     ViT/S (12 blocks): [2, 5, 8, 11]
     ViT/B (12 blocks): [2, 5, 8, 11]
     ViT/L (24 blocks): [5, 11, 17, 23] (correct), [4, 11, 17, 23] (incorrect)
-    ViT/g (40 blocks): [9, 19, 29, 39]
+    ViT/g (40 blocks): [9, 19, 29, 39].
     """
     n_blocks = getattr(model, "n_blocks", 1)
     if isinstance(backbone_out_layers, list):

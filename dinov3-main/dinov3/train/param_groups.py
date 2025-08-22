@@ -18,10 +18,12 @@ def get_vit_lr_decay_rate(
 ):
     """
     Calculate lr decay rate for different ViT blocks.
+
     Args:
         name (string): parameter name.
         lr_decay_rate (float): base lr decay rate.
         num_layers (int): number of ViT blocks.
+
     Returns:
         lr decay rate for the given parameter.
     """

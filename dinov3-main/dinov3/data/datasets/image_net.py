@@ -180,7 +180,7 @@ class ImageNet(ExtendedVisionDataset):
         labels = []
 
         try:
-            with open(labels_full_path, "r") as f:
+            with open(labels_full_path) as f:
                 reader = csv.reader(f)
                 for row in reader:
                     class_id, class_name = row
