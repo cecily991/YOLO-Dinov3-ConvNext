@@ -161,7 +161,7 @@ def create_linear_input(x_tokens_list, use_n_blocks, use_avgpool):
 
 
 class LinearClassifier(nn.Module):
-    """Linear layer to train on top of frozen features"""
+    """Linear layer to train on top of frozen features."""
 
     def __init__(self, out_dim, use_n_blocks, use_avgpool, num_classes=1000):
         super().__init__()
@@ -221,9 +221,9 @@ def setup_linear_classifiers(sample_output, n_last_blocks_list, learning_rates, 
                     out_dim, use_n_blocks=n, use_avgpool=avgpool, num_classes=num_classes
                 )
                 linear_classifier = linear_classifier.cuda()
-                linear_classifiers_dict[
-                    f"classifier_{n}_blocks_avgpool_{avgpool}_lr_{lr:.5f}".replace(".", "_")
-                ] = linear_classifier
+                linear_classifiers_dict[f"classifier_{n}_blocks_avgpool_{avgpool}_lr_{lr:.5f}".replace(".", "_")] = (
+                    linear_classifier
+                )
                 optim_param_groups.append({"params": linear_classifier.parameters(), "lr": lr})
 
     linear_classifiers = AllClassifiers(linear_classifiers_dict)
@@ -473,7 +473,15 @@ def train_linear_classifiers(
     val_evaluator: Evaluator,
     checkpoint_output_dir: str,
 ):
-    (linear_classifiers, start_iter, max_iter, criterion, optimizer, scheduler, best_accuracy,) = setup_linear_training(
+    (
+        linear_classifiers,
+        start_iter,
+        max_iter,
+        criterion,
+        optimizer,
+        scheduler,
+        best_accuracy,
+    ) = setup_linear_training(
         config=train_config,
         sample_output=feature_model(train_dataset[0][0].unsqueeze(0).cuda()),
         training_num_classes=training_num_classes,
@@ -496,7 +504,7 @@ def train_linear_classifiers(
     )
 
     iteration = start_iter
-    logger.info("Starting training from iteration {}".format(start_iter))
+    logger.info(f"Starting training from iteration {start_iter}")
     metric_logger = MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value:.6g}"))
     header = "Training"
@@ -665,7 +673,7 @@ def eval_linear_with_model(*, model: torch.nn.Module, autocast_dtype, config: Li
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=LinearEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_linear_with_model(

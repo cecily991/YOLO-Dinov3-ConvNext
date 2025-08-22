@@ -66,14 +66,14 @@ class DINOLoss(nn.Module):
             Q /= torch.sum(Q, dim=0, keepdim=True)
             Q /= B
 
-        Q *= B  # the colomns must sum to 1 so that Q is an assignment
+        Q *= B  # the columns must sum to 1 so that Q is an assignment
         return Q.t()
 
     def forward(self, student_logits, teacher_probs, ignore_diagonal=False):
         """
         Cross-entropy between softmax outputs of the teacher and student networks.
         student_logits: [student crops, batch, prototypes]
-        teacher_probs:  [teacher crops, batch, prototypes] must sum to 1 over the last dim
+        teacher_probs:  [teacher crops, batch, prototypes] must sum to 1 over the last dim.
 
         loss = 0
         count = 0

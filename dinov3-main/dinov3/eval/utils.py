@@ -267,9 +267,7 @@ def save_results(
     output_dir: str,
     filename_suffix: Optional[str] = None,
 ) -> None:
-    """
-    Helper to save predictions from a model and their associated targets, aligned by their index
-    """
+    """Helper to save predictions from a model and their associated targets, aligned by their index."""
     filename_suffix = "" if filename_suffix is None else f"_{filename_suffix}"
     preds_filename = f"preds{filename_suffix}.npy"
     target_filename = f"target{filename_suffix}.npy"

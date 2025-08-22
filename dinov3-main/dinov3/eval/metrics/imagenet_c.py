@@ -186,7 +186,6 @@ def compute_relative_average_scores(scores: Scores, inv_scores_ref: Scores = ALE
 
 
 class ImageNet_C_Metric(Metric):
-
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = False
     full_state_update: bool = False

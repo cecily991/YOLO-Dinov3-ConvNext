@@ -1,16 +1,17 @@
 # custom_modules/dinov3_backbone.py
 # 最终重构版: 直接调用官方 get_intermediate_layers API
 
+import os
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
-import os
 
 
 class DINOv3ConvNeXtTinyBackbone(nn.Module):
     """
     用于YOLO的DINOv3 ConvNeXt-Tiny骨干网络封装类。
-    (最终重构版: 直接调用官方 get_intermediate_layers API)
+    (最终重构版: 直接调用官方 get_intermediate_layers API).
     """
 
     def __init__(self, repo_path: str, weight_path: str, freeze: bool = False):
@@ -23,10 +24,7 @@ class DINOv3ConvNeXtTinyBackbone(nn.Module):
 
         # 加载完整的DINOv3模型并将其保存为类的一个属性
         self.model = torch.hub.load(
-            repo_or_dir=repo_path,
-            model='dinov3_convnext_tiny',
-            source='local',
-            weights=weight_path
+            repo_or_dir=repo_path, model="dinov3_convnext_tiny", source="local", weights=weight_path
         )
 
         # 确定输出通道数
@@ -38,9 +36,7 @@ class DINOv3ConvNeXtTinyBackbone(nn.Module):
                 param.requires_grad = False
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
-        """
-        通过调用官方的 get_intermediate_layers API 来执行前向传播。
-        """
+        """通过调用官方的 get_intermediate_layers API 来执行前向传播。."""
         # 直接调用官方函数提取 P3, P4, P5 特征
         # n=[1, 2, 3] -> 提取 stage 1, 2, 3 的输出
         # reshape=True -> 确保输出是 [B, C, H, W] 的二维特征图格式
@@ -163,9 +159,9 @@ class DINOv3ConvNeXtTinyBackbone(nn.Module):
 
 #####################################################################
 # --- 模拟前向传播 ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     # 假设您的环境中可以成功导入以下所有模块
-    from ultralytics.nn.modules import Conv, C3k2, SPPF, C2PSA
+    from ultralytics.nn.modules import C2PSA, SPPF, C3k2, Conv
 
     # 创建一个网络模块的列表，以模拟YAML中的顺序结构
     backbone_layers = nn.ModuleList()
@@ -211,7 +207,7 @@ if __name__ == '__main__':
     backbone_layers.append(C2PSA(c1=1024, c2=1024, n=2))
     # 创建一个虚拟输入图像
     dummy_input = torch.randn(1, 3, 640, 640)
-    print(f"--- Starting Backbone Simulation ---")
+    print("--- Starting Backbone Simulation ---")
     print(f"Initial Input Shape: {dummy_input.shape}\n")
 
     x = dummy_input
@@ -229,5 +225,5 @@ if __name__ == '__main__':
         if i == 7:  # Conv after C3k2
             print("  -> P5/32 Feature Map Extracted")
 
-    print(f"\n--- Final Backbone Output Shape ---")
+    print("\n--- Final Backbone Output Shape ---")
     print(f"After Layer 10 (C2PSA): {x.shape}")

@@ -1,6 +1,5 @@
 # verify_model.py
 import torch
-from sympy.geometry.entity import scale
 
 from ultralytics.nn.tasks import DetectionModel
 from ultralytics.utils.torch_utils import select_device
@@ -8,8 +7,8 @@ from ultralytics.utils.torch_utils import select_device
 print("--- Starting Model Verification ---")
 
 # 1. 指定你的配置文件和设备
-cfg_path = 'configs/yolo11-dinov3-tiny.yaml'
-device = select_device('cpu') # 使用CPU即可，无需GPU
+cfg_path = "configs/yolo11-dinov3-tiny.yaml"
+device = select_device("cpu")  # 使用CPU即可，无需GPU
 print(f"Loading model from configuration: {cfg_path}")
 
 try:
@@ -45,7 +44,8 @@ try:
     print("\n--- 🎉 Verification Successful! The DINOv3 backbone is correctly embedded. ---")
 
 except Exception as e:
-    print(f"\n--- ❌ Verification Failed! ---")
+    print("\n--- ❌ Verification Failed! ---")
     print(f"An error occurred: {e}")
     import traceback
+
     traceback.print_exc()

@@ -15,19 +15,19 @@ import ftfy
 import regex as re
 
 
-@lru_cache()
+@lru_cache
 def default_bpe():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
 
 
-@lru_cache()
+@lru_cache
 def bytes_to_unicode():
     """
     Returns list of utf-8 byte and a corresponding list of unicode strings.
     The reversible bpe codes work on unicode strings.
     This means you need a large # of unicode characters in your vocab if you want to avoid UNKs.
     When you're at something like a 10B token dataset you end up needing around 5K for decent coverage.
-    This is a signficant percentage of your normal, say, 32K bpe vocab.
+    This is a significant percentage of your normal, say, 32K bpe vocab.
     To avoid that, we want lookup tables between utf-8 bytes and unicode strings.
     And avoids mapping to whitespace/control characters the bpe code barfs on.
     """
@@ -67,7 +67,7 @@ def whitespace_clean(text):
     return text
 
 
-class SimpleTokenizer(object):
+class SimpleTokenizer:
     def __init__(self, bpe_path: str = default_bpe()):
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}

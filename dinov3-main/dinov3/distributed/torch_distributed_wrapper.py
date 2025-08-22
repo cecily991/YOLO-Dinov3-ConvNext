@@ -338,7 +338,7 @@ def get_subgroup_rank() -> int:
 def get_subgroup_size() -> int:
     """
     Returns:
-        The number of processes in the process subgroup
+        The number of processes in the process subgroup.
     """
     return get_world_size(group=get_process_subgroup())
 

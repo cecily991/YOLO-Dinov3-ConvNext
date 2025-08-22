@@ -49,15 +49,9 @@ class VisionHead(nn.Module):
         multiplier = 2 if use_class_token and use_patch_tokens else 1
         self.linear_projection = nn.Identity()
         if multiplier * input_dim != embed_dim or use_linear_projection:
-            logger.info(
-                f"Vision Tower: Using a linear projection from {input_dim} to {embed_dim}"
-            )
-            assert embed_dim % multiplier == 0, (
-                f"Expects {embed_dim} to be divisible by {multiplier}"
-            )
-            self.linear_projection = nn.Linear(
-                input_dim, embed_dim // multiplier, bias=False
-            )
+            logger.info(f"Vision Tower: Using a linear projection from {input_dim} to {embed_dim}")
+            assert embed_dim % multiplier == 0, f"Expects {embed_dim} to be divisible by {multiplier}"
+            self.linear_projection = nn.Linear(input_dim, embed_dim // multiplier, bias=False)
 
     def init_weights(self):
         if self.num_blocks > 0:
@@ -122,9 +116,7 @@ class VisionTower(nn.Module):
         self.backbone.init_weights()
         self.head.init_weights()
 
-    def get_backbone_features(
-        self, images: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def get_backbone_features(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         tokens = self.backbone.get_intermediate_layers(
             images,
             n=self.patch_token_layer,
@@ -136,13 +128,9 @@ class VisionTower(nn.Module):
         register_tokens = tokens[0][2]
         return class_token, patch_tokens, register_tokens
 
-    def get_class_and_patch_tokens(
-        self, images: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def get_class_and_patch_tokens(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         class_token, patch_tokens, register_tokens = self.get_backbone_features(images)
-        image_tokens = self.head(
-            torch.cat([class_token.unsqueeze(1), register_tokens, patch_tokens], dim=1)
-        )
+        image_tokens = self.head(torch.cat([class_token.unsqueeze(1), register_tokens, patch_tokens], dim=1))
         return (
             image_tokens[:, 0],
             image_tokens[:, self.num_register_tokens + 1 :],
@@ -150,9 +138,7 @@ class VisionTower(nn.Module):
         )
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
-        class_token, patch_tokens, backbone_patch_tokens = (
-            self.get_class_and_patch_tokens(images)
-        )
+        class_token, patch_tokens, backbone_patch_tokens = self.get_class_and_patch_tokens(images)
         features = []
         if self.use_class_token:
             features.append(class_token)
@@ -162,9 +148,7 @@ class VisionTower(nn.Module):
             elif self.patch_tokens_pooler_type == "max":
                 features.append(torch.max(patch_tokens, dim=1).values)
             else:
-                raise ValueError(
-                    f"Unknown patch tokens pooler type: {self.patch_tokens_pooler_type}"
-                )
+                raise ValueError(f"Unknown patch tokens pooler type: {self.patch_tokens_pooler_type}")
         return torch.cat(features, dim=-1), patch_tokens, backbone_patch_tokens
 
 

@@ -29,7 +29,7 @@ logger = logging.getLogger("dinov3")
 class SSLMetaArch(nn.Module):
     """
     Modified version of SSLMetaArchCompilable including gram loss:
-    - Gram loss is used only if gram.use_loss is set to true
+    - Gram loss is used only if gram.use_loss is set to true.
     """
 
     def __init__(self, cfg):
@@ -248,7 +248,7 @@ class SSLMetaArch(nn.Module):
             if cfg.crops.gram_teacher_crops_size is None and self.has_gram_teacher:
                 raise ValueError("cfg.crops.gram_teacher_crops_size must be set to use gram loss")
             if cfg.crops.gram_teacher_crops_size is not None and self.gram_ema_teacher:
-                raise ValueError("cfg.crops.gram_teacher_crops_size shoud be None when gram.ema_teacher=True")
+                raise ValueError("cfg.crops.gram_teacher_crops_size should be None when gram.ema_teacher=True")
 
             self.student_crop_size = cfg.crops.global_crops_size
             self.gram_global_teacher_resize_method = cfg.gram.global_teacher_resize_method
@@ -775,7 +775,7 @@ class SSLMetaArch(nn.Module):
     def get_params_groups(self):
         all_params_groups = []
         for name, m in self.student.items():
-            logger.info(f"Getting paramer groups for {name}")
+            logger.info(f"Getting parameter groups for {name}")
             all_params_groups += self.get_maybe_fused_params_for_submodel(m)
         return all_params_groups
 
@@ -799,9 +799,7 @@ class SSLMetaArch(nn.Module):
         )
 
     def broadcast_to_subgroups(self, tensor, over_dim, global_batch_size=None):
-        """
-        This is an operation that takes a tensor from the default process group, gathers it, stacks it, then scatters it within a smaller process subgroup
-        """
+        """This is an operation that takes a tensor from the default process group, gathers it, stacks it, then scatters it within a smaller process subgroup."""
         world_size = distributed.get_world_size()
         subgroup_size = distributed.get_subgroup_size()
         gathered = [torch.zeros_like(tensor) for _ in range(world_size)]
