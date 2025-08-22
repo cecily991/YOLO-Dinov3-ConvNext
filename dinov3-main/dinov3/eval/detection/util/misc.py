@@ -21,10 +21,10 @@ Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.
 """
+
 import copy
 from typing import List, Optional
 
-import dinov3.distributed as distributed
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -33,6 +33,8 @@ import torch.nn.functional as F
 # needed due to empty tensor bug in pytorch and torchvision 0.5
 import torchvision
 from torch import Tensor
+
+import dinov3.distributed as distributed
 
 
 def reduce_dict(input_dict, average=True):
@@ -97,7 +99,7 @@ def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
     return NestedTensor(tensor, mask)
 
 
-class NestedTensor(object):
+class NestedTensor:
     def __init__(self, tensors, mask: Optional[Tensor]):
         self.tensors = tensors
         self.mask = mask
@@ -129,7 +131,7 @@ class NestedTensor(object):
 
 @torch.no_grad()
 def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
+    """Computes the precision@k for the specified values of k."""
     if target.numel() == 0:
         return [torch.zeros([], device=output.device)]
     maxk = max(topk)
@@ -271,7 +273,7 @@ def _get_clones(module, N):
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Return an activation function given a string."""
     if activation == "relu":
         return F.relu
     if activation == "gelu":

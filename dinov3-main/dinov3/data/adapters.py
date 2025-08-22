@@ -25,7 +25,7 @@ class DatasetWithEnumeratedTargets(Dataset):
     """
     If pad_dataset is set, pads based on torch's DistributedSampler implementation, which
     with drop_last=False pads the last batch to be a multiple of the world size.
-    https://github.com/pytorch/pytorch/blob/main/torch/utils/data/distributed.py#L91
+    https://github.com/pytorch/pytorch/blob/main/torch/utils/data/distributed.py#L91.
     """
 
     def __init__(self, dataset: Dataset, pad_dataset: bool = False, num_replicas: Optional[int] = None):

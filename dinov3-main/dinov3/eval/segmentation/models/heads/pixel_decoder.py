@@ -4,19 +4,19 @@
 # the terms of the DINOv3 License Agreement.
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-import numpy as np
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from torch import nn
+from torch.amp import autocast
 from torch.nn import functional as F
 from torch.nn.init import normal_
-from torch.amp import autocast
 
 from dinov3.eval.segmentation.models.utils.batch_norm import get_norm
-from dinov3.eval.segmentation.models.utils.position_encoding import PositionEmbeddingSine
-from dinov3.eval.segmentation.models.utils.transformer import _get_clones, _get_activation_fn
 from dinov3.eval.segmentation.models.utils.ms_deform_attn import MSDeformAttn
+from dinov3.eval.segmentation.models.utils.position_encoding import PositionEmbeddingSine
+from dinov3.eval.segmentation.models.utils.transformer import _get_activation_fn, _get_clones
 
 
 def c2_xavier_fill(module: nn.Module) -> None:
@@ -38,9 +38,7 @@ def c2_xavier_fill(module: nn.Module) -> None:
 
 
 class Conv2d(torch.nn.Conv2d):
-    """
-    A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features.
-    """
+    """A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features."""
 
     def __init__(self, *args, **kwargs):
         """
@@ -255,6 +253,7 @@ class MSDeformAttnPixelDecoder(nn.Module):
     ):
         """
         NOTE: this interface is experimental.
+
         Args:
             input_shape: shapes (channels and stride) of the input features
             transformer_dropout: dropout probability in transformer
@@ -263,7 +262,7 @@ class MSDeformAttnPixelDecoder(nn.Module):
             transformer_enc_layers: number of transformer encoder layers
             conv_dims: number of output channels for the intermediate conv layers.
             mask_dim: number of output channels for the final conv layer.
-            norm (str or callable): normalization for all conv layers
+            norm (str or callable): normalization for all conv layers.
         """
         super().__init__()
         transformer_input_shape = {k: v for k, v in input_shape.items() if k in transformer_in_features}

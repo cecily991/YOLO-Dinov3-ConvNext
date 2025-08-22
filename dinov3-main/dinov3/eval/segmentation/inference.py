@@ -78,6 +78,7 @@ def make_inference(
         output_activation (callable): Output activation to use on top of the predictions.
             - softmax is used when each pixel belongs to a single class (multiclass),
             - sigmoid is used when pixel can belong to multiple classes (multilabel). Defaults to None (identity).
+
     Returns:
         Tensor: The segmentation results created from the input image.
     """
@@ -134,6 +135,7 @@ def slide_inference(
     """Inference by sliding-window with overlap.
     If h_crop > h_img or w_crop > w_img, the small patch will be used to
     decode without padding.
+
     Args:
         inputs (tensor): the tensor should have a shape NxCxHxW,
             which contains all images in the batch.
@@ -141,6 +143,7 @@ def slide_inference(
         n_output_channels (int): number of output channels
         crop_size (tuple): (h_crop, w_crop)
         stride (tuple): (h_stride, w_stride)
+
     Returns:
         Tensor: The output results from model of each input image.
     """

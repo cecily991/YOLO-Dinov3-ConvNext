@@ -4,13 +4,12 @@
 # the terms of the DINOv3 License Agreement.
 
 import math
+from functools import partial
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-
-from functools import partial
 
 from dinov3.eval.segmentation.models.utils.ms_deform_attn import MSDeformAttn
 
@@ -30,7 +29,7 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob: float = 0.0):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
@@ -320,7 +319,7 @@ class DINOv3_Adapter(nn.Module):
         use_extra_extractor=True,
         with_cp=True,
     ):
-        super(DINOv3_Adapter, self).__init__()
+        super().__init__()
         self.backbone = backbone
         # Important: we freeze the backbone
         self.backbone.requires_grad_(False)

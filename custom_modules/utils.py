@@ -1,5 +1,7 @@
-import torch.nn as nn
 from typing import List
+
+import torch.nn as nn
+
 
 class FeatureSelector(nn.Module):
     def __init__(self, feature_index: int, out_channels: int):

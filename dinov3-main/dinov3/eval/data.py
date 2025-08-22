@@ -64,9 +64,7 @@ def get_labels(dataset) -> torch.Tensor:
 
 
 def get_num_classes(dataset) -> int:
-    """
-    Get the labels of a dataset and compute the number of classes
-    """
+    """Get the labels of a dataset and compute the number of classes."""
     labels = get_labels(dataset)
     if len(labels.shape) > 1:
         return int(labels.shape[1])
@@ -91,9 +89,7 @@ def create_class_indices_mapping(labels: torch.Tensor) -> dict[int, torch.Tensor
 
 
 def _shuffle_dataset(dataset: torch.Tensor, seed: int = 0):
-    """
-    Shuffling a dataset by subsetting it with a random permutation of its indices
-    """
+    """Shuffling a dataset by subsetting it with a random permutation of its indices."""
     random_generator = torch.Generator()
     random_generator.manual_seed(seed)
     random_indices = torch.randperm(len(dataset), generator=random_generator)
@@ -110,9 +106,8 @@ def _subset_dataset_per_class(
     """
     Helper function to select a percentage of a dataset, equally distributed across classes,
     or to take the same number of elements from each class of the dataset.
-    Returns a boolean mask tensor being True at indices of selected elements
+    Returns a boolean mask tensor being True at indices of selected elements.
     """
-
     random_generator = torch.Generator()
     random_generator.manual_seed(seed)
 
@@ -139,14 +134,13 @@ def _multilabel_rebalance_subset(
     to better match a target percentage of labels.
     Returns a boolean mask tensor being True at indices of selected elements.
     """
-
     # Compute the number of selected labels in indices_bool
     num_total_labels = labels.sum()
     num_wanted_labels = int(num_total_labels * n_or_percent_per_class)
     num_selected_labels = (labels[indices_bool] > 0).sum()
     logger.info(f" {num_selected_labels} labels instead of {num_wanted_labels}")
 
-    # Compute a new percentage and new set selecting less images, therefore less labels, to match approximatelly the exact percentage of labels selected
+    # Compute a new percentage and new set selecting less images, therefore less labels, to match approximately the exact percentage of labels selected
     n_or_percent_per_class = n_or_percent_per_class / (num_selected_labels / num_wanted_labels)
     final_indices_bool = _subset_dataset_per_class(
         class_indices_mapping, n_or_percent_per_class, dataset_size, seed, True
@@ -232,9 +226,7 @@ def create_train_dataset_dict(
 def extract_features_for_dataset_dict(
     model, dataset_dict: dict[int, dict[int, Any]], batch_size: int, num_workers: int, gather_on_cpu=False
 ) -> dict[int, dict[str, torch.Tensor]]:
-    """
-    Extract features for each subset of dataset in the context of few-shot evaluations
-    """
+    """Extract features for each subset of dataset in the context of few-shot evaluations."""
     few_shot_data_dict: dict[int, dict[str, torch.Tensor]] = {}
     for try_n, dataset in dataset_dict.items():
         features, labels = extract_features(model, dataset, batch_size, num_workers, gather_on_cpu=gather_on_cpu)

@@ -5,9 +5,7 @@
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # # Modified by Bowen Cheng from: https://github.com/facebookresearch/detr/blob/master/models/position_encoding.py
-"""
-Various positional encodings for the transformer.
-"""
+"""Various positional encodings for the transformer."""
 
 import math
 
@@ -56,10 +54,10 @@ class PositionEmbeddingSine(nn.Module):
     def __repr__(self, _repr_indent=4):
         head = "Positional encoding " + self.__class__.__name__
         body = [
-            "num_pos_feats: {}".format(self.num_pos_feats),
-            "temperature: {}".format(self.temperature),
-            "normalize: {}".format(self.normalize),
-            "scale: {}".format(self.scale),
+            f"num_pos_feats: {self.num_pos_feats}",
+            f"temperature: {self.temperature}",
+            f"normalize: {self.normalize}",
+            f"scale: {self.scale}",
         ]
         # _repr_indent = 4
         lines = [head] + [" " * _repr_indent + line for line in body]

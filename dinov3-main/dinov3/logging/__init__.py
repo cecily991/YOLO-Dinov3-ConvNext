@@ -12,7 +12,6 @@ from typing import Optional
 from termcolor import colored
 
 from dinov3.distributed import TorchDistributedEnvironment
-
 from dinov3.logging.helpers import MetricLogger, SmoothedValue
 
 _LEVEL_COLORED_KWARGS = {
@@ -47,7 +46,7 @@ class _LevelColoredFormatter(logging.Formatter):
 
 
 # So that calling _configure_logger multiple times won't add many handlers
-@functools.lru_cache()
+@functools.lru_cache
 def _configure_logger(
     name: Optional[str] = None,
     *,
@@ -74,7 +73,6 @@ def _configure_logger(
     Returns:
         The configured logger.
     """
-
     # Disable colored output if the stdout is not a terminal
     color = color and os.isatty(sys.stdout.fileno())
 

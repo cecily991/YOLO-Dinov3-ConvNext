@@ -117,7 +117,7 @@ def convert_linears_to_fp8(root_module: torch.nn.Module, *, filter: str) -> torc
             # switch back to cuBLAS, it artificially requires dims to be
             # multiples of 16.
             raise RuntimeError(
-                "fp8 requires all dimensions to be multiples of 64 " "(consider using ffn_layer=swiglu64 or higher)"
+                "fp8 requires all dimensions to be multiples of 64 (consider using ffn_layer=swiglu64 or higher)"
             )
         new_module = new_cls(
             in_features=module.in_features,
