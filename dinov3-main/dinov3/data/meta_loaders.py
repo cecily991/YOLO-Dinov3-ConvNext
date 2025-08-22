@@ -14,9 +14,7 @@ T = TypeVar("T")
 
 
 class CombinedDataLoader:
-    """
-    Combines data loaders using the provided sampling ratios
-    """
+    """Combines data loaders using the provided sampling ratios."""
 
     GLOBAL_HOMOGENEOUS = 0
     LOCAL_HOMOGENEOUS = 1

@@ -263,7 +263,6 @@ class CausalSelfAttentionBlock(nn.Module):
         self,
         x: torch.Tensor,
     ):
-
         x_attn = x + self.ls1(self.attention(self.attention_norm(x), self.is_causal))
         x_ffn = x_attn + self.ls2(self.feed_forward(self.ffn_norm(x_attn)))
         return x_ffn

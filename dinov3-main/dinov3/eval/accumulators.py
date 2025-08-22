@@ -43,9 +43,7 @@ class NoOpAccumulator(Accumulator):
 
 
 class ResultsAccumulator(Accumulator):
-    """
-    Accumulate predictions and targets across processes
-    """
+    """Accumulate predictions and targets across processes."""
 
     def __init__(self) -> None:
         self._local_values: Dict[str, List[Tensor]] = defaultdict(list)

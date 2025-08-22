@@ -5,9 +5,9 @@
 
 import os
 from enum import Enum
+from pathlib import Path
 from typing import List, Optional, Union
 from urllib.parse import urlparse
-from pathlib import Path
 
 import torch
 

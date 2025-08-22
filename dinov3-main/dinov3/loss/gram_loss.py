@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 
 class GramLoss(nn.Module):
-    """Implementation of the gram loss"""
+    """Implementation of the gram loss."""
 
     def __init__(
         self,
@@ -41,7 +41,6 @@ class GramLoss(nn.Module):
         Returns:
             loss: scalar
         """
-
         # Dimensions of the tensor should be (B, N, dim)
         if img_level:
             assert len(target_feats.shape) == 3 and len(output_feats.shape) == 3

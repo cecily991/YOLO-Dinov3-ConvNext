@@ -5,15 +5,18 @@
 
 import gc
 import logging
-from functools import partial
 import math
 import os
 import sys
+from functools import partial
 from pathlib import Path
 from typing import Callable
 
-import dinov3.distributed as distributed
 import torch
+from omegaconf import OmegaConf
+from torch import optim
+
+import dinov3.distributed as distributed
 from dinov3.checkpointer import (
     find_latest_checkpoint,
     keep_last_n_checkpoints,
@@ -28,8 +31,6 @@ from dinov3.eval.text.dinotxt_model import DINOTxt, DINOTxtConfig
 from dinov3.eval.text.gram_loss import gram_loss_fn
 from dinov3.logging import MetricLogger, setup_logging
 from dinov3.train.cosine_lr_scheduler import linear_warmup_cosine_decay
-from omegaconf import OmegaConf
-from torch import optim
 
 logger = logging.getLogger("dinov3")
 
@@ -47,7 +48,7 @@ def test(
     if distributed.is_subgroup_main_process():
         eval_dir.mkdir(parents=True, exist_ok=True)
 
-    ckpt_dir = eval_dir / str("sharded_model_checkpoint")
+    ckpt_dir = eval_dir / "sharded_model_checkpoint"
     save_checkpoint(ckpt_dir, iteration=iteration, model=model)
 
 
@@ -93,21 +94,13 @@ def train(
     seed: int = 11,
 ):
     named_parameters = list(model.named_parameters())
-    gain_or_bias_params = [
-        p for n, p in named_parameters if exclude(n, p) and p.requires_grad
-    ]
-    gain_or_bias_params_names = [
-        n for n, p in named_parameters if exclude(n, p) and p.requires_grad
-    ]
+    gain_or_bias_params = [p for n, p in named_parameters if exclude(n, p) and p.requires_grad]
+    gain_or_bias_params_names = [n for n, p in named_parameters if exclude(n, p) and p.requires_grad]
     rest_params = [p for n, p in named_parameters if include(n, p) and p.requires_grad]
-    rest_params_names = [
-        n for n, p in named_parameters if include(n, p) and p.requires_grad
-    ]
+    rest_params_names = [n for n, p in named_parameters if include(n, p) and p.requires_grad]
     logger.info(f"Gain or bias params: {gain_or_bias_params_names}")
     logger.info(f"Rest params: {rest_params_names}")
-    logger.info(
-        f"Learning rate: {lr}, batch_size_per_gpu: {batch_size}, weight_decay: {weight_decay}"
-    )
+    logger.info(f"Learning rate: {lr}, batch_size_per_gpu: {batch_size}, weight_decay: {weight_decay}")
     optimizer = optim.AdamW(
         [
             {"params": gain_or_bias_params, "weight_decay": 0.0},
@@ -124,11 +117,7 @@ def train(
         f"Init lr scheduler: {lr_scheduler_type}, warmup length: {warmup_length}, base_lr: {lr}, max iter: {max_iteration}"
     )
 
-    if (
-        resume
-        and (ckpt_dir := find_latest_checkpoint(os.path.join(output_dir, "ckpt")))
-        is not None
-    ):
+    if resume and (ckpt_dir := find_latest_checkpoint(os.path.join(output_dir, "ckpt"))) is not None:
         iteration = load_checkpoint(ckpt_dir, model=model, optimizer=optimizer)
         start_iteration = iteration + 1
         del iteration, ckpt_dir
@@ -154,9 +143,7 @@ def train(
     )
     rank = distributed.get_rank()
     world_size = distributed.get_world_size()
-    logger.info(
-        f"Init loss function: rank: {distributed.get_rank()}, world size: {world_size}"
-    )
+    logger.info(f"Init loss function: rank: {distributed.get_rank()}, world size: {world_size}")
     clip_loss = partial(memory_efficient_clip_loss, group=torch.distributed.group.WORLD)
     cur_iteration = start_iteration
     logger.info(f"Starting training from iteration {start_iteration}...")
@@ -202,7 +189,7 @@ def train(
         total_loss.backward()
         optimizer.step()
 
-        # This clamping trick is from OpenCLIP reposistory which MetaCLIP follows. Orginally used in CLIP training.
+        # This clamping trick is from OpenCLIP reposistory which MetaCLIP follows. Originally used in CLIP training.
         # NOTE: we clamp to 4.6052 = ln(100), as in the original paper.
         with torch.no_grad():
             unwrap_model(model).logit_scale.clamp_(0, math.log(100))
@@ -212,9 +199,7 @@ def train(
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
         metric_logger.update(logit_scale=logit_scale.item())
         is_last_iteration = (cur_iteration + 1) == max_iteration
-        is_ckpt_iteration = (
-            (cur_iteration + 1) % checkpointing_period == 0
-        ) or is_last_iteration
+        is_ckpt_iteration = ((cur_iteration + 1) % checkpointing_period == 0) or is_last_iteration
         if is_ckpt_iteration:
             ckpt_dir = Path(output_dir, "ckpt").expanduser()
             save_checkpoint(
@@ -241,9 +226,7 @@ def train(
         cur_iteration += 1
 
 
-def write_config(
-    model_config: DINOTxtConfig, output_dir, name="clip_model_config.yaml"
-):
+def write_config(model_config: DINOTxtConfig, output_dir, name="clip_model_config.yaml"):
     logger.info(OmegaConf.to_yaml(model_config))
     saved_cfg_path = os.path.join(output_dir, name)
     with open(saved_cfg_path, "w") as f:
@@ -302,11 +285,7 @@ def main(argv=None):
         dataset_str=config.train_dataset_str,
         transform=transform,
     )
-    sampler_type = (
-        SamplerType.SHARDED_INFINITE
-        if config.dataset_use_cache
-        else SamplerType.INFINITE
-    )
+    sampler_type = SamplerType.SHARDED_INFINITE if config.dataset_use_cache else SamplerType.INFINITE
     train(
         train_dataset=train_dataset,
         model=model,

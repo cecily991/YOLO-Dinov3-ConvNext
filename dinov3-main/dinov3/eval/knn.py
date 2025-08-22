@@ -95,7 +95,7 @@ class KnnEvalConfig:
 
 class KnnModule(torch.nn.Module):
     """
-    Gets knn of test features from all processes on a chunk of the train features
+    Gets knn of test features from all processes on a chunk of the train features.
 
     Each rank gets a chunk of the train features as well as a chunk of the test features.
     In `compute_neighbors`, for each rank one after the other, its chunk of test features
@@ -126,14 +126,14 @@ class KnnModule(torch.nn.Module):
     def _get_knn_sims_and_labels(self, similarity, train_labels):
         topk_sims, indices = similarity.topk(min(self.max_k, similarity.shape[1]), largest=True, sorted=True)
         if len(train_labels.shape) == 3:  # If the labels are in one_hot format
-            indices = indices.unsqueeze(2).expand(-1, -1, self.num_classes)  # Orignally [bs, max_k]
+            indices = indices.unsqueeze(2).expand(-1, -1, self.num_classes)  # Originally [bs, max_k]
         neighbors_labels = torch.gather(train_labels, 1, indices)
         return topk_sims, neighbors_labels
 
     def _similarity_for_rank(self, features_rank, source_rank):
         """
         Broadcasts `features_rank` from `source_rank` and compute similarities
-        with the train features chunks from all ranks
+        with the train features chunks from all ranks.
         """
         # Send the features from `source_rank` to all ranks
         broadcast_shape = torch.tensor(features_rank.shape).to(self.device)
@@ -152,7 +152,7 @@ class KnnModule(torch.nn.Module):
     def compute_neighbors(self, features_rank):
         """
         If we are on rank `rank`, we broadcast the test features to other ranks, compute similarities
-        with their chunks of the train features, then gather these partial similarities back on `rank`
+        with their chunks of the train features, then gather these partial similarities back on `rank`.
         """
         topk_sims_rank, neighbors_labels_rank = None, None
         for rank in range(self.world_size):
@@ -166,9 +166,7 @@ class KnnModule(torch.nn.Module):
         return topk_sims_rank, neighbors_labels_rank
 
     def forward(self, features_rank):
-        """
-        Compute the results on all values of `self.ks` neighbors from the full `self.max_k`
-        """
+        """Compute the results on all values of `self.ks` neighbors from the full `self.max_k`."""
         assert all(k <= self.max_k for k in self.ks)
 
         topk_sims, neighbors_labels = self.compute_neighbors(features_rank)
@@ -361,7 +359,7 @@ def eval_knn_with_model(*, model: torch.nn.Module, autocast_dtype, config: KnnEv
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=KnnEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_knn_with_model(

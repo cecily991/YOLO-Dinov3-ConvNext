@@ -323,7 +323,7 @@ def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, co
     val_dataset. Then, the final model is trained on a concatenation of
     train_dataset and val_dataset, and is evaluated on test_dataset.
     If there is no val_dataset, the value of C is the one that yields
-    the best results on a random 10% subset of the train dataset
+    the best results on a random 10% subset of the train dataset.
     """
     start = time.time()
     cudnn.benchmark = True
@@ -399,7 +399,7 @@ def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, co
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=LogregEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_log_regression_with_model(

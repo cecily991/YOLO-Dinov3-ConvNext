@@ -679,7 +679,7 @@ class Concat(nn.Module):
         Returns:
             (torch.Tensor): Concatenated tensor.
         """
-        print('concat的输入：')
+        print("concat的输入：")
         for i in x:
             print(i.shape)
         return torch.cat(x, self.d)
