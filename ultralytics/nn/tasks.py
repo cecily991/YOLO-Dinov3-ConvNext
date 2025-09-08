@@ -104,7 +104,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 
 # ⭐ 确保下面这两行导入语句已添加
-from custom_modules.dinov3_backbone import DINOv3ConvNeXtTinyBackbone
+from custom_modules.dinov3_backbone import DINOv3ConvNextBackbone
 from custom_modules.utils import FeatureSelector
 ##########################################################
 
@@ -219,17 +219,17 @@ class BaseModel(torch.nn.Module):
             x = m(x)
 
             # <<< 在这里插入打印 >>>
-            if isinstance(x, torch.Tensor):
-                if x_in is not None:
-                    print(f"Layer {m.i}: {m.type} | Input {list(x_in.shape)} -> Output {list(x.shape)}")
-                else:
-                    print(f"Layer {m.i}: {m.type} | Output {list(x.shape)}")
+            # if isinstance(x, torch.Tensor):
+            #     if x_in is not None:
+            #         print(f"Layer {m.i}: {m.type} | Input {list(x_in.shape)} -> Output {list(x.shape)}")
+            #     else:
+            #         print(f"Layer {m.i}: {m.type} | Output {list(x.shape)}")
 
             # 保存输出
             y.append(x if m.i in self.save else None)
 
             # 打印当前 y
-            print(len(y))
+            # print(len(y))
 
             # 可视化
             if visualize:
@@ -1747,7 +1747,7 @@ def parse_model(d, ch, verbose=True):
                 args.insert(2, n)  # number of repeats
                 n = 1
             if m is C3k2:  # for M/L/X sizes
-                print(f'c3k2期望输入为：{c1}')
+                # print(f'c3k2期望输入为：{c1}')
                 legacy = False
                 if scale in "mlx":
                     args[3] = True
@@ -1770,14 +1770,14 @@ def parse_model(d, ch, verbose=True):
         elif m is torch.nn.BatchNorm2d:
             args = [ch[f]]
         elif m is Concat:
-            print(f'f是{f}')
+            # print(f'f是{f}')
             res = 0
             for x in f:
                 if x != -1:
                     x += 3
                 res += ch[x]
             c2 = res
-            print(f"Concat的输出通道：{c2}")
+            # print(f"Concat的输出通道：{c2}")
         elif m in frozenset(
             {Detect, WorldDetect, YOLOEDetect, Segment, YOLOESegment, Pose, OBB, ImagePoolingAttn, v10Detect}
         ):
@@ -1801,7 +1801,7 @@ def parse_model(d, ch, verbose=True):
             c2 = args[0]
             c1 = ch[f]
             args = [*args[1:]]
-        elif m is DINOv3ConvNeXtTinyBackbone:
+        elif m is DINOv3ConvNextBackbone:
             m = m(*args)
             backbone = True
             c2 = m._out_channels

@@ -13,7 +13,7 @@ scales: # model compound scaling constants - IGNORED by fixed-size DINOv3 backbo
 # DINOv3-ConvNeXt-Tiny backbone with adapter layers
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, DINOv3ConvNeXtTinyBackbone, ['dinov3-main', 'dinov3-main/checkpoints/dinov3_convnext_tiny.pth']] # 0
+  - [-1, 1, DINOv3ConvNextBackbone, ['dinov3-main', 'dinov3-main/checkpoints/dinov3_convnext_small.pth', 'small', True]] # 0
 
   - [ 0, 1, FeatureSelector, [ 0, 192 ] ] # 4
   - [-1, 1, Conv, [256, 1, 1]] # 5   P3

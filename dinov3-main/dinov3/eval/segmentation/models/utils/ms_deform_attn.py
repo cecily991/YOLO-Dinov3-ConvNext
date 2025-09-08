@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Function
-from torch.amp import custom_fwd, custom_bwd
+from torch.cuda.amp import custom_fwd, custom_bwd
 
 from torch.autograd.function import once_differentiable
 from torch.nn.init import constant_, xavier_uniform_
@@ -25,7 +25,7 @@ except ImportError:
 
 class MSDeformAttnFunction(Function):
     @staticmethod
-    @custom_fwd(device_type="cuda", cast_inputs=torch.float32)
+    @custom_fwd(cast_inputs=torch.float32)
     def forward(
         ctx, value, value_spatial_shapes, value_level_start_index, sampling_locations, attention_weights, im2col_step
     ):
@@ -44,7 +44,7 @@ class MSDeformAttnFunction(Function):
 
     @staticmethod
     @once_differentiable
-    @custom_bwd(device_type="cuda")
+    @custom_bwd
     def backward(ctx, grad_output):
         if MSDA is None:
             raise RuntimeError(
