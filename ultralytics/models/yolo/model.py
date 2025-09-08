@@ -1,7 +1,7 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import torch
 
@@ -87,7 +87,7 @@ class YOLO(Model):
                 self.__dict__ = new_instance.__dict__
 
     @property
-    def task_map(self) -> Dict[str, Dict[str, Any]]:
+    def task_map(self) -> dict[str, dict[str, Any]]:
         """Map head to model, trainer, validator, and predictor classes."""
         return {
             "classify": {
@@ -167,7 +167,7 @@ class YOLOWorld(Model):
             self.model.names = YAML.load(ROOT / "cfg/datasets/coco8.yaml").get("names")
 
     @property
-    def task_map(self) -> Dict[str, Dict[str, Any]]:
+    def task_map(self) -> dict[str, dict[str, Any]]:
         """Map head to model, validator, and predictor classes."""
         return {
             "detect": {
@@ -178,7 +178,7 @@ class YOLOWorld(Model):
             }
         }
 
-    def set_classes(self, classes: List[str]) -> None:
+    def set_classes(self, classes: list[str]) -> None:
         """
         Set the model's class names for detection.
 
@@ -246,7 +246,7 @@ class YOLOE(Model):
         super().__init__(model=model, task=task, verbose=verbose)
 
     @property
-    def task_map(self) -> Dict[str, Dict[str, Any]]:
+    def task_map(self) -> dict[str, dict[str, Any]]:
         """Map head to model, validator, and predictor classes."""
         return {
             "detect": {
@@ -291,7 +291,7 @@ class YOLOE(Model):
         assert isinstance(self.model, YOLOEModel)
         return self.model.get_visual_pe(img, visual)
 
-    def set_vocab(self, vocab: List[str], names: List[str]) -> None:
+    def set_vocab(self, vocab: list[str], names: list[str]) -> None:
         """
         Set vocabulary and class names for the YOLOE model.
 
@@ -317,7 +317,7 @@ class YOLOE(Model):
         assert isinstance(self.model, YOLOEModel)
         return self.model.get_vocab(names)
 
-    def set_classes(self, classes: List[str], embeddings: Optional[torch.Tensor] = None) -> None:
+    def set_classes(self, classes: list[str], embeddings: Optional[torch.Tensor] = None) -> None:
         """
         Set the model's class names and embeddings for detection.
 
@@ -368,7 +368,7 @@ class YOLOE(Model):
         self,
         source=None,
         stream: bool = False,
-        visual_prompts: Dict[str, List] = {},
+        visual_prompts: dict[str, list] = {},
         refer_image=None,
         predictor=yolo.yoloe.YOLOEVPDetectPredictor,
         **kwargs,

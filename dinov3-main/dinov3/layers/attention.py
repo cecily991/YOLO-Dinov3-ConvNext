@@ -4,12 +4,12 @@
 # the terms of the DINOv3 License Agreement.
 
 import math
-from typing import List, Tuple
 
 import torch
 import torch.nn.functional as F
-from dinov3.utils import cat_keep_shapes, uncat_with_shapes
 from torch import Tensor, nn
+
+from dinov3.utils import cat_keep_shapes, uncat_with_shapes
 
 
 # RoPE-related functions:
@@ -63,7 +63,7 @@ class SelfAttention(nn.Module):
         self.proj = nn.Linear(dim, dim, bias=proj_bias, device=device)
         self.proj_drop = nn.Dropout(proj_drop)
 
-    def apply_rope(self, q: Tensor, k: Tensor, rope: Tensor | Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tensor]:
+    def apply_rope(self, q: Tensor, k: Tensor, rope: Tensor | tuple[Tensor, Tensor]) -> tuple[Tensor, Tensor]:
         # All operations will use the dtype of rope, the output is cast back to the dtype of q and k
         q_dtype = q.dtype
         k_dtype = k.dtype
@@ -91,7 +91,7 @@ class SelfAttention(nn.Module):
         x = self.proj_drop(x)
         return x
 
-    def forward_list(self, x_list, attn_bias=None, rope_list=None) -> List[Tensor]:
+    def forward_list(self, x_list, attn_bias=None, rope_list=None) -> list[Tensor]:
         assert len(x_list) == len(rope_list)  # should be enforced by the Block
         x_flat, shapes, num_tokens = cat_keep_shapes(x_list)
         qkv_flat = self.qkv(x_flat)

@@ -15,12 +15,10 @@
 # Modified from DETR (https://github.com/facebookresearch/detr)
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
+"""Backbone modules."""
 
-"""
-Backbone modules.
-"""
 import logging
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -39,8 +37,8 @@ class DINOBackbone(nn.Module):
         self,
         backbone_model: nn.Module,
         train_backbone: bool,
-        blocks_to_train: Optional[List[str]] = None,
-        layers_to_use: Union[int, List] = 1,
+        blocks_to_train: Optional[list[str]] = None,
+        layers_to_use: Union[int, list] = 1,
         use_layernorm: bool = True,
     ):
         super().__init__()
@@ -95,7 +93,7 @@ class BackboneWithPositionEncoding(nn.Sequential):
         self.num_channels = backbone.num_channels
 
     def forward(self, tensor_list: NestedTensor):
-        out: List[NestedTensor] = list(self[0](tensor_list))
+        out: list[NestedTensor] = list(self[0](tensor_list))
         pos = [self[1][idx](x).to(x.tensors.dtype) for idx, x in enumerate(out)]
         return out, pos
 

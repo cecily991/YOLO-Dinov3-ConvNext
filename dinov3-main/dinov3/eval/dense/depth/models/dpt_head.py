@@ -43,6 +43,7 @@ class ConvModule(nn.Module):
     2. Spectral norm is supported.
     3. More padding modes are supported. Before PyTorch 1.5, nn.Conv2d only
     supports zero and circular padding, and we add "reflect" padding mode.
+
     Args:
         in_channels (int): Number of channels in the input feature map.
             Same as that in ``nn._ConvNd``.
@@ -229,7 +230,7 @@ class ConvModule(nn.Module):
 
 class Interpolate(nn.Module):
     def __init__(self, scale_factor, mode, align_corners=False):
-        super(Interpolate, self).__init__()
+        super().__init__()
         self.interp = nn.functional.interpolate
         self.scale_factor = scale_factor
         self.mode = mode
@@ -242,7 +243,7 @@ class Interpolate(nn.Module):
 
 class UpConvHead(nn.Module):
     """
-    A 3 layer Convolutional head with intermediate upsampling
+    A 3 layer Convolutional head with intermediate upsampling.
 
     Args:
     - features (int): number of input channels
@@ -260,7 +261,7 @@ class UpConvHead(nn.Module):
     """
 
     def __init__(self, features, n_output_channels, n_hidden_channels=32):
-        super(UpConvHead, self).__init__()
+        super().__init__()
         self.n_output_channels = n_output_channels
         self.head = nn.Sequential(
             nn.Conv2d(features, features // 2, kernel_size=3, stride=1, padding=1),
@@ -276,8 +277,9 @@ class UpConvHead(nn.Module):
 
 
 class ReassembleBlocks(nn.Module):
-    """ViTPostProcessBlock, process cls_token in ViT backbone output and
-    rearrange the feature vector to feature map.
+    """
+    ViTPostProcessBlock, process cls_token in ViT backbone output and rearrange the feature vector to feature map.
+
     Args:
         in_channels (List): ViT feature channels.
             Default: [1024, 1024, 1024, 1024].
@@ -294,7 +296,7 @@ class ReassembleBlocks(nn.Module):
         readout_type="project",
         use_batchnorm=False,
     ):
-        super(ReassembleBlocks, self).__init__()
+        super().__init__()
 
         assert readout_type in ["ignore", "add", "project"]
         self.readout_type = readout_type
@@ -359,7 +361,9 @@ class ReassembleBlocks(nn.Module):
 
 
 class PreActResidualConvUnit(nn.Module):
-    """ResidualConvUnit, pre-activate residual unit.
+    """
+    ResidualConvUnit, pre-activate residual unit.
+
     Args:
         in_channels (int): number of channels in the input feature map.
         act_cfg (dict): dictionary to construct and config activation layer.
@@ -370,7 +374,7 @@ class PreActResidualConvUnit(nn.Module):
     """
 
     def __init__(self, in_channels, act_cfg, norm_cfg, stride=1, dilation=1, init_cfg=None):
-        super(PreActResidualConvUnit, self).__init__()  # init_cfg)
+        super().__init__()  # init_cfg)
         self.conv1 = ConvModule(
             in_channels,
             in_channels,
@@ -402,7 +406,9 @@ class PreActResidualConvUnit(nn.Module):
 
 
 class FeatureFusionBlock(nn.Module):
-    """FeatureFusionBlock, merge feature map from different stages.
+    """
+    FeatureFusionBlock, merge feature map from different stages.
+
     Args:
         in_channels (int): Input channels.
         act_cfg (dict): The activation config for ResidualConvUnit.
@@ -415,7 +421,7 @@ class FeatureFusionBlock(nn.Module):
     """
 
     def __init__(self, in_channels, act_cfg, norm_cfg, expand=False, align_corners=True, init_cfg=None):
-        super(FeatureFusionBlock, self).__init__()  # init_cfg)
+        super().__init__()  # init_cfg)
         self.in_channels = in_channels
         self.expand = expand
         self.align_corners = align_corners
@@ -452,6 +458,7 @@ class FeatureFusionBlock(nn.Module):
 class DPTHead(nn.Module):
     """Vision Transformers for Dense Prediction.
     This head is implemented of `DPT <https://arxiv.org/abs/2103.13413>`_.
+
     Args:
         in_channels (List): The input dimensions of the ViT backbone.
             Default: [1024, 1024, 1024, 1024].
@@ -475,7 +482,7 @@ class DPTHead(nn.Module):
         use_batchnorm=False,  # TODO
         **kwargs,
     ):
-        super(DPTHead, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.channels = channels
         self.n_output_channels = n_output_channels
         self.in_channels = in_channels
@@ -508,9 +515,9 @@ class DPTHead(nn.Module):
         self.conv_depth = UpConvHead(self.channels, self.n_output_channels)
 
     def forward_features(self, inputs):
-        assert (
-            len(inputs) == self.num_reassemble_blocks
-        ), f"Expected {self.num_reassemble_blocks} inputs, got {len(inputs)}."
+        assert len(inputs) == self.num_reassemble_blocks, (
+            f"Expected {self.num_reassemble_blocks} inputs, got {len(inputs)}."
+        )
         x = [inp for inp in inputs]
 
         x = self.reassemble_blocks(x)

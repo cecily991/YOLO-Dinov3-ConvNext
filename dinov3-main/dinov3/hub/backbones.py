@@ -5,9 +5,9 @@
 
 import os
 from enum import Enum
-from typing import List, Optional, Union
-from urllib.parse import urlparse
 from pathlib import Path
+from typing import Optional, Union
+from urllib.parse import urlparse
 
 import torch
 
@@ -161,8 +161,8 @@ def _make_dinov3_convnext_model_url(
 
 def _make_dinov3_convnext(
     in_chans: int = 3,
-    depths: List[int] = [3, 3, 27, 3],
-    dims: List[int] = [128, 256, 512, 1024],
+    depths: list[int] = [3, 3, 27, 3],
+    dims: list[int] = [128, 256, 512, 1024],
     compact_arch_name: str = "convnext_base",
     drop_path_rate: float = 0.0,
     layer_scale_init_value: float = 1e-6,

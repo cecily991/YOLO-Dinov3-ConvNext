@@ -13,20 +13,24 @@ scales: # model compound scaling constants - IGNORED by fixed-size DINOv3 backbo
 # DINOv3-ConvNeXt-Tiny backbone with adapter layers
 backbone:
   # [from, repeats, module, args]
-  - [-1, 1, DINOv3ConvNeXtTinyBackbone, ['dinov3-main', 'dinov3-main/checkpoints/dinov3_convnext_tiny.pth']] # 0
+  - [
+      -1,
+      1,
+      DINOv3ConvNeXtTinyBackbone,
+      ["dinov3-main", "dinov3-main/checkpoints/dinov3_convnext_tiny.pth"],
+    ] # 0
 
-  - [ 0, 1, FeatureSelector, [ 0, 192 ] ] # 4
+  - [0, 1, FeatureSelector, [0, 192]] # 4
   - [-1, 1, Conv, [256, 1, 1]] # 5   P3
 
-  - [ 0, 1, FeatureSelector, [ 1, 384 ] ] # 6
+  - [0, 1, FeatureSelector, [1, 384]] # 6
   - [-1, 1, Conv, [512, 1, 1]] #7    P4
 
-  - [ 0, 1, FeatureSelector, [ 2, 768 ] ] # 8
+  - [0, 1, FeatureSelector, [2, 768]] # 8
   - [-1, 1, Conv, [1024, 1, 1]] # 9  P5
 
-  - [ -1, 1, SPPF, [ 1024, 5 ] ] # 10
-  - [ -1, 2, C2PSA, [ 1024 ] ] # 11
-
+  - [-1, 1, SPPF, [1024, 5]] # 10
+  - [-1, 2, C2PSA, [1024]] # 11
 
 # YOLO11n head, re-routed to connect to the new backbone
 head:

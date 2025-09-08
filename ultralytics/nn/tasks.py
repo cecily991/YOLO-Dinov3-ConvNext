@@ -3,6 +3,9 @@
 import contextlib
 import pickle
 import re
+
+########################################################
+import sys
 import types
 from copy import deepcopy
 from pathlib import Path
@@ -93,10 +96,6 @@ from ultralytics.utils.torch_utils import (
     time_sync,
 )
 
-########################################################
-import sys
-from pathlib import Path
-
 # 将项目根目录添加到Python路径中，以便能找到 custom_modules
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[2]  # 从 tasks.py 向上两级就是项目根目录
@@ -106,6 +105,7 @@ if str(ROOT) not in sys.path:
 # ⭐ 确保下面这两行导入语句已添加
 from custom_modules.dinov3_backbone import DINOv3ConvNeXtTinyBackbone
 from custom_modules.utils import FeatureSelector
+
 ##########################################################
 
 
@@ -203,7 +203,7 @@ class BaseModel(torch.nn.Module):
     #     return x
 
     def _predict_once(self, x, profile=False, visualize=False, embed=None):
-        y, dt, embeddings = [], [], []  # outputs
+        y, _dt, embeddings = [], [], []  # outputs
         embed = frozenset(embed) if embed is not None else {-1}
         max_idx = max(embed)
 
@@ -1747,7 +1747,7 @@ def parse_model(d, ch, verbose=True):
                 args.insert(2, n)  # number of repeats
                 n = 1
             if m is C3k2:  # for M/L/X sizes
-                print(f'c3k2期望输入为：{c1}')
+                print(f"c3k2期望输入为：{c1}")
                 legacy = False
                 if scale in "mlx":
                     args[3] = True
@@ -1770,7 +1770,7 @@ def parse_model(d, ch, verbose=True):
         elif m is torch.nn.BatchNorm2d:
             args = [ch[f]]
         elif m is Concat:
-            print(f'f是{f}')
+            print(f"f是{f}")
             res = 0
             for x in f:
                 if x != -1:
@@ -1783,7 +1783,7 @@ def parse_model(d, ch, verbose=True):
         ):
             res = []
             for x in f:
-                res.append(ch[x+3])
+                res.append(ch[x + 3])
             args.append(res)
             if m is Segment or m is YOLOESegment:
                 args[2] = make_divisible(min(args[2], max_channels) * width, 8)
@@ -1806,7 +1806,7 @@ def parse_model(d, ch, verbose=True):
             backbone = True
             c2 = m._out_channels
         elif m is FeatureSelector:
-            c2 = ch[args[0]+1]
+            c2 = ch[args[0] + 1]
         else:
             c2 = ch[f]
 
@@ -1828,7 +1828,7 @@ def parse_model(d, ch, verbose=True):
         if isinstance(c2, list):
             ch.extend(c2)
             if len(c2) != 5:
-                ch.insert(0,0)
+                ch.insert(0, 0)
         else:
             ch.append(c2)
     return torch.nn.Sequential(*layers), sorted(save)

@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 import torch
 
@@ -28,27 +28,17 @@ def _cycle_over_all_chunks(
         dst_chunk = torch.empty_like(my_chunk)
 
         if iter_ < pg.size() - 1:
-            send_op = torch.distributed.P2POp(
-                torch.distributed.isend, src_chunk, next_rank, group=pg
-            )
-            recv_op = torch.distributed.P2POp(
-                torch.distributed.irecv, dst_chunk, prev_rank, group=pg
-            )
+            send_op = torch.distributed.P2POp(torch.distributed.isend, src_chunk, next_rank, group=pg)
+            recv_op = torch.distributed.P2POp(torch.distributed.irecv, dst_chunk, prev_rank, group=pg)
             reqs = torch.distributed.batch_isend_irecv([send_op, recv_op])
         else:
             reqs = []
 
-        src_extra_chunk = step_fn(
-            src_chunk, (pg.rank() - iter_) % pg.size(), extra_req, dst_extra_chunk
-        )
+        src_extra_chunk = step_fn(src_chunk, (pg.rank() - iter_) % pg.size(), extra_req, dst_extra_chunk)
         if src_extra_chunk is not None:
             dst_extra_chunk = torch.empty_like(src_extra_chunk)
-            send_op = torch.distributed.P2POp(
-                torch.distributed.isend, src_extra_chunk, next_rank, group=pg
-            )
-            recv_op = torch.distributed.P2POp(
-                torch.distributed.irecv, dst_extra_chunk, prev_rank, group=pg
-            )
+            send_op = torch.distributed.P2POp(torch.distributed.isend, src_extra_chunk, next_rank, group=pg)
+            recv_op = torch.distributed.P2POp(torch.distributed.irecv, dst_extra_chunk, prev_rank, group=pg)
             (extra_req,) = torch.distributed.batch_isend_irecv([send_op, recv_op])
         else:
             extra_req = None
@@ -98,9 +88,7 @@ class MemoryEfficientClipLoss(torch.autograd.Function):
         _cycle_over_all_chunks(text_features, pg, my_step)
 
         text_partial_lses_for_me = torch.empty_like(text_partial_lses_for_others)
-        torch.distributed.all_to_all_single(
-            text_partial_lses_for_me, text_partial_lses_for_others, group=pg
-        )
+        torch.distributed.all_to_all_single(text_partial_lses_for_me, text_partial_lses_for_others, group=pg)
 
         image_lses_for_me = torch.logsumexp(image_partial_lses_for_me, dim=0)
         text_lses_for_me = torch.logsumexp(text_partial_lses_for_me, dim=0)
@@ -116,14 +104,12 @@ class MemoryEfficientClipLoss(torch.autograd.Function):
         )
         ctx.pg = pg  # type: ignore[attr-defined]
 
-        return (-(2 * positives - image_lses_for_me - text_lses_for_me).mean() / 2).to(
-            positives.dtype
-        )
+        return (-(2 * positives - image_lses_for_me - text_lses_for_me).mean() / 2).to(positives.dtype)
 
     @staticmethod
     def backward(
         ctx: torch.autograd.function.FunctionCtx, *grad_outputs: torch.Tensor
-    ) -> Tuple[Optional[torch.Tensor], ...]:
+    ) -> tuple[Optional[torch.Tensor], ...]:
         pg: torch.distributed.ProcessGroup = ctx.pg  # type: ignore[attr-defined]
         image_features: torch.Tensor
         text_features: torch.Tensor
@@ -143,12 +129,8 @@ class MemoryEfficientClipLoss(torch.autograd.Function):
         (grad,) = grad_outputs
         grad /= 2 * positives.numel()
 
-        text_lse_for_others = text_lses_for_me.new_empty(
-            (pg.size(),) + text_lses_for_me.shape
-        )
-        torch.distributed.all_gather_into_tensor(
-            text_lse_for_others, text_lses_for_me, group=pg
-        )
+        text_lse_for_others = text_lses_for_me.new_empty((pg.size(),) + text_lses_for_me.shape)
+        torch.distributed.all_gather_into_tensor(text_lse_for_others, text_lses_for_me, group=pg)
 
         grad_image_features = torch.zeros_like(image_features)
         grad_logit_scale = torch.zeros_like(logit_scale)
@@ -163,8 +145,7 @@ class MemoryEfficientClipLoss(torch.autograd.Function):
             logits = logit_scale * raw_logits
 
             grad_logits = (
-                (logits - image_lses_for_me[:, None]).exp()
-                + (logits - text_lse_for_others[other_rank, None, :]).exp()
+                (logits - image_lses_for_me[:, None]).exp() + (logits - text_lse_for_others[other_rank, None, :]).exp()
             ).to(logits.dtype)
             if other_rank == pg.rank():
                 torch.diagonal(grad_logits).sub_(2)
@@ -200,6 +181,4 @@ def memory_efficient_clip_loss(
     *,
     group: torch.distributed.ProcessGroup,
 ) -> torch.Tensor:
-    return MemoryEfficientClipLoss.apply(
-        group, image_features.float(), text_features.float(), logit_scale.float()
-    )
+    return MemoryEfficientClipLoss.apply(group, image_features.float(), text_features.float(), logit_scale.float())

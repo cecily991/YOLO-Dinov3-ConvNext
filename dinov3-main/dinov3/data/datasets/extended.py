@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Any, Tuple
+from typing import Any
 
 from torchvision.datasets import VisionDataset
 
@@ -28,7 +28,7 @@ class ExtendedVisionDataset(VisionDataset):
     def get_target(self, index: int) -> Any:
         raise NotImplementedError
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    def __getitem__(self, index: int) -> tuple[Any, Any]:
         try:
             image_data = self.get_image_data(index)
             image = self.image_decoder(image_data).decode()

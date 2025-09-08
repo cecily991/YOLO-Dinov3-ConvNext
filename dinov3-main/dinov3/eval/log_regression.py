@@ -8,7 +8,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -174,7 +174,7 @@ def sweep_C_values(
 ):
     metric_tracker = MetricTracker(val_metric, maximize=True)
     ALL_C = 10**C_POWER_RANGE
-    logreg_models: Dict[float, Any] = {}
+    logreg_models: dict[float, Any] = {}
 
     train_features_device = torch.device(logreg_config.train_features_device)
     train_dtype = as_torch_dtype(logreg_config.train_dtype)
@@ -195,7 +195,7 @@ def sweep_C_values(
             logreg_config=logreg_config,
         )
 
-    gather_list: List[Dict[float, Any]] = [{} for _ in range(get_world_size())]
+    gather_list: list[dict[float, Any]] = [{} for _ in range(get_world_size())]
     torch.distributed.all_gather_object(gather_list, logreg_models)
 
     for logreg_dict in gather_list:
@@ -319,11 +319,10 @@ def make_test_dataset_and_data_loader(model, config: EvalConfig, transform, gath
 def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, config: LogregEvalConfig):
     """
     Implements the "standard" process for log regression evaluation:
-    The value of C is chosen by training on train_dataset and evaluating on
-    val_dataset. Then, the final model is trained on a concatenation of
-    train_dataset and val_dataset, and is evaluated on test_dataset.
-    If there is no val_dataset, the value of C is the one that yields
-    the best results on a random 10% subset of the train dataset
+
+    The value of C is chosen by training on train_dataset and evaluating on val_dataset. Then, the final model is
+    trained on a concatenation of train_dataset and val_dataset, and is evaluated on test_dataset. If there is no
+    val_dataset, the value of C is the one that yields the best results on a random 10% subset of the train dataset.
     """
     start = time.time()
     cudnn.benchmark = True
@@ -399,7 +398,7 @@ def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, co
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=LogregEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_log_regression_with_model(

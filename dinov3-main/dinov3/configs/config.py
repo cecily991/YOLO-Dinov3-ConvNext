@@ -8,9 +8,10 @@ import math
 import os
 import pathlib
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any, List, Optional, Sequence, Tuple
+from typing import Any, Optional
 
 from omegaconf import DictConfig, OmegaConf
 
@@ -27,7 +28,7 @@ class DinoV3SetupArgs:
     pretrained_weights: str | None = None
     shard_unsharded_model: bool = False
     output_dir: str = ""
-    opts: List[Any] = field(default_factory=lambda: [])
+    opts: list[Any] = field(default_factory=lambda: [])
 
     def __post_init__(self):
         # When loaded from benchmark.yaml, self.opts is a frozen omegaconf.ListConfig,
@@ -91,13 +92,11 @@ def get_cfg_from_args(args: DinoV3SetupArgs, multidistillation=False, strict=Tru
 
 
 def setup_config(args: DinoV3SetupArgs, strict_cfg=True):
-    """
-    Create configs and perform basic setups.
-    """
+    """Create configs and perform basic setups."""
     # Create the cfg with OmegaConf
     cfg = get_cfg_from_args(args, strict=strict_cfg)
     # setup distributed, logging, and random seeds
-    logger.info("\n".join("%s: %s" % (k, str(v)) for k, v in sorted(dict(vars(args)).items())))
+    logger.info("\n".join(f"{k}: {str(v)}" for k, v in sorted(dict(vars(args)).items())))
     # dump config before modifying so it can be reloaded
     if args.output_dir is not None:
         write_config(cfg, args.output_dir)
@@ -106,8 +105,9 @@ def setup_config(args: DinoV3SetupArgs, strict_cfg=True):
     return cfg
 
 
-def _enumerate_all_subgroup_ranks(all_subgroup_rank_spans: Sequence[Tuple[int, int]]):
-    """Expands a specification of process subgroups from spans to enumerated ranks.
+def _enumerate_all_subgroup_ranks(all_subgroup_rank_spans: Sequence[tuple[int, int]]):
+    """
+    Expands a specification of process subgroups from spans to enumerated ranks.
 
     Args:
        all_group_rank_spans: a sequence of rank spans (first rank, last rank),
@@ -178,9 +178,8 @@ def setup_job(
     restrict_print_to_main_process: bool = True,
     distributed_timeout: timedelta | None = None,
 ):
-    """
-    Setup methods that should be done in every fairvit job
-    Initializes logging, distributed, random seeds and other utilities.
+    """Setup methods that should be done in every fairvit job Initializes logging, distributed, random seeds and other
+    utilities.
     """
     if output_dir is not None:
         output_dir = os.path.realpath(output_dir)
@@ -206,7 +205,7 @@ def setup_job(
         fix_random_seeds(seed + rank)
 
     logger = logging.getLogger("fairvit")
-    logger.info("git:\n  {}\n".format(get_sha()))
+    logger.info(f"git:\n  {get_sha()}\n")
 
     # Log some python info
     conda_env_name, conda_env_path = get_conda_env()

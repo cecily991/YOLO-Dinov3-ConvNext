@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 import torch
 from torch import Tensor, nn
@@ -84,6 +84,7 @@ class SelfAttentionBlock(nn.Module):
     def _forward(self, x: Tensor, rope=None) -> Tensor:
         """
         This is the reference implementation for a single tensor, matching what is done below for a list.
+
         We call the list op on [x] instead of this function.
         """
         b, _, _ = x.shape
@@ -123,11 +124,12 @@ class SelfAttentionBlock(nn.Module):
 
         return x_ffn
 
-    def _forward_list(self, x_list: List[Tensor], rope_list=None) -> List[Tensor]:
+    def _forward_list(self, x_list: list[Tensor], rope_list=None) -> list[Tensor]:
         """
-        This list operator concatenates the tokens from the list of inputs together to save
-        on the elementwise operations. Torch-compile memory-planning allows hiding the overhead
-        related to concat ops.
+        This list operator concatenates the tokens from the list of inputs together to save on the elementwise
+        operations.
+
+        Torch-compile memory-planning allows hiding the overhead related to concat ops.
         """
         b_list = [x.shape[0] for x in x_list]
         sample_subset_sizes = [max(int(b * (1 - self.sample_drop_ratio)), 1) for b in b_list]
@@ -197,7 +199,7 @@ class SelfAttentionBlock(nn.Module):
 
         return x_ffn
 
-    def forward(self, x_or_x_list, rope_or_rope_list=None) -> List[Tensor]:
+    def forward(self, x_or_x_list, rope_or_rope_list=None) -> list[Tensor]:
         if isinstance(x_or_x_list, Tensor):
             # for reference:
             # return self._forward(x_or_x_list, rope=rope_or_rope_list)
@@ -263,7 +265,6 @@ class CausalSelfAttentionBlock(nn.Module):
         self,
         x: torch.Tensor,
     ):
-
         x_attn = x + self.ls1(self.attention(self.attention_norm(x), self.is_causal))
         x_ffn = x_attn + self.ls2(self.feed_forward(self.ffn_norm(x_attn)))
         return x_ffn

@@ -7,7 +7,7 @@ import gc
 import logging
 import os
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -96,8 +96,8 @@ class ModelWithIntermediateLayers(nn.Module):
 def evaluate(
     model: nn.Module,
     data_loader,
-    postprocessors: Dict[str, nn.Module],
-    metrics: Dict[str, Metric],
+    postprocessors: dict[str, nn.Module],
+    metrics: dict[str, Metric],
     device: torch.device,
     criterion: Optional[nn.Module] = None,
     accumulate_results: bool = False,
@@ -207,7 +207,7 @@ def extract_features_with_dataloader(model, data_loader, sample_count, gather_on
     return features, all_labels
 
 
-def save_features_dict(features_dict: Dict[str, torch.Tensor], path: str) -> None:
+def save_features_dict(features_dict: dict[str, torch.Tensor], path: str) -> None:
     logger.info(f'saving features to "{path}"')
 
     for key, value in features_dict.items():
@@ -226,7 +226,7 @@ def save_features_dict(features_dict: Dict[str, torch.Tensor], path: str) -> Non
         raise ValueError(f'Unsupported features dict extension "{ext}"')
 
 
-def load_features_dict(path: str) -> Dict[str, torch.Tensor]:
+def load_features_dict(path: str) -> dict[str, torch.Tensor]:
     logger.info(f'loading features from "{path}"')
 
     _, ext = os.path.splitext(path)
@@ -245,11 +245,12 @@ def load_features_dict(path: str) -> Dict[str, torch.Tensor]:
     return features_dict
 
 
-def average_metrics(eval_metrics_dict: dict[Any, dict[str, torch.Tensor]], ignore_keys: List[str] = []):
+def average_metrics(eval_metrics_dict: dict[Any, dict[str, torch.Tensor]], ignore_keys: list[str] = []):
     """
     Function that computes the average and the std on a metrics dict.
-    A linear evaluation dictionary contains "best_classifier",
-    so this specific key is removed for computing aggregated metrics.
+
+    A linear evaluation dictionary contains "best_classifier", so this specific key is removed for computing aggregated
+    metrics.
     """
     output_metrics_dict = {}
     metrics = [metric for metric in eval_metrics_dict[0].keys() if metric not in ignore_keys]
@@ -267,9 +268,7 @@ def save_results(
     output_dir: str,
     filename_suffix: Optional[str] = None,
 ) -> None:
-    """
-    Helper to save predictions from a model and their associated targets, aligned by their index
-    """
+    """Helper to save predictions from a model and their associated targets, aligned by their index."""
     filename_suffix = "" if filename_suffix is None else f"_{filename_suffix}"
     preds_filename = f"preds{filename_suffix}.npy"
     target_filename = f"target{filename_suffix}.npy"

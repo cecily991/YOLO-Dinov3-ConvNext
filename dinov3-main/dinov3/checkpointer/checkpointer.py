@@ -2,7 +2,6 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
-
 """
 Suggested file structure:
 
@@ -28,9 +27,9 @@ import logging
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import List, Sequence, Set
 
 import torch
 import torch.distributed as dist
@@ -50,8 +49,8 @@ class CheckpointRetentionPolicy(Enum):
     NONE = "none"  # do not keep any checkpoints
 
     @property
-    def keep_filters(self) -> Set[str]:
-        """Files that match these patterns are not deleted by cleanup"""
+    def keep_filters(self) -> set[str]:
+        """Files that match these patterns are not deleted by cleanup."""
         if self == CheckpointRetentionPolicy.LAST:
             return set(["final"])
         if self == CheckpointRetentionPolicy.BEST:
@@ -65,7 +64,9 @@ class CheckpointRetentionPolicy(Enum):
     @property
     def max_to_keep(self) -> int | None:
         """
-        maximum "periodic" checkpoints to keep concurrently, ie. saved with `step` and not `save`. `None` for keep all
+        Maximum "periodic" checkpoints to keep concurrently, ie.
+
+        saved with `step` and not `save`. `None` for keep all.
         """
         if self == CheckpointRetentionPolicy.ALL:
             return None
@@ -143,8 +144,9 @@ def load_checkpoint(
 ) -> int | None:
     """
     Load a plain/DDP/FSDP/FSDP2 model, its optimizer, an integer iteration and other stateful objects.
-    Can you take a checkpoint saved on N ranks and load it on M ranks? Sure you can!
-    Activation checkpointing and torch-compile can also be different between save and load, no problem.
+
+    Can you take a checkpoint saved on N ranks and load it on M ranks? Sure you can! Activation checkpointing and torch-
+    compile can also be different between save and load, no problem.
     """
     ckpt_dir = Path(ckpt_dir)
     to_load = {"iteration": None}
@@ -171,7 +173,7 @@ def register_dont_save_hooks(module: torch.nn.Module, dont_save: Sequence[str]):
     Registers save/load state dict hooks such that the weights in `dont_save` are not persisted in the checkpoint.
 
     Typical use case: a classification model composed of a frozen backbone and a trainable head.
-    If the frozen backbone is loaded from torch hub, it does't make sense to save a copy of it in each checkpoint.
+    If the frozen backbone is loaded from torch hub, it doesn't make sense to save a copy of it in each checkpoint.
     """
 
     def state_dict_post_hook(module, state_dict, prefix, local_metadata):
@@ -218,7 +220,11 @@ def register_dont_save_hooks(module: torch.nn.Module, dont_save: Sequence[str]):
 
 
 def find_all_checkpoints(ckpt_dir: Path | str) -> list[Path]:
-    """Find all checkpoints in a directory, i.e. subdirs with integer name. Sorted from first to last."""
+    """
+    Find all checkpoints in a directory, i.e. subdirs with integer name.
+
+    Sorted from first to last.
+    """
     ckpt_dir = Path(ckpt_dir)
     if not ckpt_dir.is_dir():
         return []
@@ -249,7 +255,11 @@ def keep_last_n_checkpoints(ckpt_dir: Path | str, n: int | None):
 
 
 def keep_checkpoint_copy(src: Path | str):
-    """Copy a file/directory next to itself with a _keep suffix. Files are hardlinked."""
+    """
+    Copy a file/directory next to itself with a _keep suffix.
+
+    Files are hardlinked.
+    """
     src = Path(src)
     dst = src.parent / f"{src.name}_keep"
     subprocess.check_output(["cp", "--recursive", "--link", src, dst])
@@ -268,8 +278,8 @@ def _is_int(s: str) -> bool:
 def init_fsdp_model_from_checkpoint(
     model: torch.nn.Module,
     checkpoint_path: str,
-    skip_load_prefixes: List[str] | None = None,
-    prefixes_not_sharded: List[str] | None = None,
+    skip_load_prefixes: list[str] | None = None,
+    prefixes_not_sharded: list[str] | None = None,
     process_group: dist.ProcessGroup = None,
 ):
     if not Path(checkpoint_path).is_dir():  # PyTorch standard checkpoint
@@ -314,25 +324,15 @@ def init_model_from_checkpoint_for_evals(
     # remove `backbone.` prefix induced by multicrop wrapper
     state_dict = {k.replace("backbone.", ""): v for k, v in state_dict.items()}
     msg = model.load_state_dict(state_dict, strict=False)
-    logger.info("Pretrained weights found at {} and loaded with msg: {}".format(pretrained_weights, msg))
+    logger.info(f"Pretrained weights found at {pretrained_weights} and loaded with msg: {msg}")
 
 
 def cleanup_checkpoint(ckpt_dir: str, checkpoint_retention_policy: CheckpointRetentionPolicy):
-    """
-    ckpt_dir is the directory containing each individual checkpoint directories (either at iteration, best (validation performance) or final)
-    |-- ckpt_dir/
-    |   |-- 0/
-    |       |--checkpoint.pth  or dcp_sharded_checkpoint_dir
-    |   |-- 99/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
-    |   |-- 199/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
-    |   |-- best/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
-    |   |-- 299/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
-    |   |-- final/
-            |--checkpoint.pth or dcp_sharded_checkpoint_dir
+    """ckpt_dir is the directory containing each individual checkpoint directories (either at iteration, best
+    (validation performance) or final) |-- ckpt_dir/ |   |-- 0/ |       |--checkpoint.pth  or dcp_sharded_checkpoint_dir
+    |   |-- 99/ |--checkpoint.pth or dcp_sharded_checkpoint_dir |   |-- 199/ |--checkpoint.pth or
+    dcp_sharded_checkpoint_dir |   |-- best/ |--checkpoint.pth or dcp_sharded_checkpoint_dir |   |-- 299/
+    |--checkpoint.pth or dcp_sharded_checkpoint_dir |   |-- final/ |--checkpoint.pth or dcp_sharded_checkpoint_dir.
     """
     ckpt_dir = Path(ckpt_dir)
     if not ckpt_dir.is_dir():

@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 
 class GramLoss(nn.Module):
-    """Implementation of the gram loss"""
+    """Implementation of the gram loss."""
 
     def __init__(
         self,
@@ -32,7 +32,8 @@ class GramLoss(nn.Module):
             assert self.remove_neg != self.remove_only_teacher_neg
 
     def forward(self, output_feats, target_feats, img_level=True):
-        """Compute the MSE loss between the gram matrix of the input and target features.
+        """
+        Compute the MSE loss between the gram matrix of the input and target features.
 
         Args:
             output_feats: Pytorch tensor (B, N, dim) or (B*N, dim) if img_level == False
@@ -41,7 +42,6 @@ class GramLoss(nn.Module):
         Returns:
             loss: scalar
         """
-
         # Dimensions of the tensor should be (B, N, dim)
         if img_level:
             assert len(target_feats.shape) == 3 and len(output_feats.shape) == 3
