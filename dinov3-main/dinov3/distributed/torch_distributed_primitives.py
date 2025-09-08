@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import torch
 import torch.distributed as dist
@@ -12,11 +12,10 @@ from torch.nn import functional as F
 from .torch_distributed_wrapper import get_default_process_group, get_world_size
 
 
-def reduce_dict(input_dict: Dict[Any, torch.Tensor], average: bool = True) -> Dict[Any, torch.Tensor]:
+def reduce_dict(input_dict: dict[Any, torch.Tensor], average: bool = True) -> dict[Any, torch.Tensor]:
     """
-    Reduce the values in the dictionary from all processes so that all processes
-    have the averaged results. Returns a dictionary with the same fields as
-    the input dictionary, after reduction.
+    Reduce the values in the dictionary from all processes so that all processes have the averaged results. Returns a
+    dictionary with the same fields as the input dictionary, after reduction.
 
     Args:
         input_dict (dict): all the values will be reduced
@@ -40,13 +39,13 @@ def reduce_dict(input_dict: Dict[Any, torch.Tensor], average: bool = True) -> Di
     return reduced_dict
 
 
-def _simple_gather_all_tensors(result: torch.Tensor, group: Any, world_size: int) -> List[torch.Tensor]:
+def _simple_gather_all_tensors(result: torch.Tensor, group: Any, world_size: int) -> list[torch.Tensor]:
     gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
     dist.all_gather(gathered_result, result, group)
     return gathered_result
 
 
-def gather_all_tensors(result: torch.Tensor, group: Optional[Any] = None) -> List[torch.Tensor]:
+def gather_all_tensors(result: torch.Tensor, group: Optional[Any] = None) -> list[torch.Tensor]:
     """
     Copied from https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/utilities/distributed.py
     Gather all tensors from several ddp processes onto a list that is broadcasted to all processes.

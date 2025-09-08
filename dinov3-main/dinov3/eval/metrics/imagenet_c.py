@@ -4,7 +4,7 @@
 # the terms of the DINOv3 License Agreement.
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -15,9 +15,9 @@ logger = logging.getLogger("fairvit")
 
 
 # corruption type (str) -> level (int) -> score (float)
-Scores = Dict[str, Dict[int, float]]
+Scores = dict[str, dict[int, float]]
 # corruption type (str) -> score (float)
-AverageScores = Dict[str, float]
+AverageScores = dict[str, float]
 
 
 ALEXNET_INVERSE_SCORES: Scores = {
@@ -186,7 +186,6 @@ def compute_relative_average_scores(scores: Scores, inv_scores_ref: Scores = ALE
 
 
 class ImageNet_C_Metric(Metric):
-
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = False
     full_state_update: bool = False

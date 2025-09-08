@@ -7,8 +7,8 @@
 import torch
 import torch.distributed as dist
 from torch import nn
-from torch.nn import functional as F
 from torch.nn import BatchNorm2d
+from torch.nn import functional as F
 
 import dinov3.distributed as distributed
 
@@ -99,7 +99,7 @@ class FrozenBatchNorm2d(nn.Module):
         )
 
     def __repr__(self):
-        return "FrozenBatchNorm2d(num_features={}, eps={})".format(self.num_features, self.eps)
+        return f"FrozenBatchNorm2d(num_features={self.num_features}, eps={self.eps})"
 
     @classmethod
     def convert_frozen_batchnorm(cls, module):
@@ -138,7 +138,7 @@ class FrozenBatchNorm2d(nn.Module):
     @classmethod
     def convert_frozenbatchnorm2d_to_batchnorm2d(cls, module: nn.Module) -> nn.Module:
         """
-        Convert all FrozenBatchNorm2d to BatchNorm2d
+        Convert all FrozenBatchNorm2d to BatchNorm2d.
 
         Args:
             module (torch.nn.Module):
@@ -149,7 +149,6 @@ class FrozenBatchNorm2d(nn.Module):
 
         This is needed for quantization.
         """
-
         res = module
         if isinstance(module, FrozenBatchNorm2d):
             res = torch.nn.BatchNorm2d(module.num_features, module.eps)
@@ -201,9 +200,8 @@ def get_norm(norm, out_channels):
 
 class NaiveSyncBatchNorm(BatchNorm2d):
     """
-    In PyTorch<=1.5, ``nn.SyncBatchNorm`` has incorrect gradient
-    when the batch size on each worker is different.
-    (e.g., when scale augmentation is used, or when it is applied to mask head).
+    In PyTorch<=1.5, ``nn.SyncBatchNorm`` has incorrect gradient when the batch size on each worker is different. (e.g.,
+    when scale augmentation is used, or when it is applied to mask head).
 
     This is a slower but correct alternative to `nn.SyncBatchNorm`.
 
@@ -221,7 +219,7 @@ class NaiveSyncBatchNorm(BatchNorm2d):
         have the same (H, W). It is slower than ``stats_mode==""``.
 
         Even though the result of this module may not be the true statistics of all samples,
-        it may still be reasonable because it might be preferrable to assign equal weights
+        it may still be reasonable because it might be preferable to assign equal weights
         to all workers, regardless of their (H, W) dimension, instead of putting larger weight
         on larger images. From preliminary experiments, little difference is found between such
         a simplified implementation and an accurate computation of overall mean & variance.
@@ -334,10 +332,11 @@ class CycleBatchNormList(nn.ModuleList):
 
 class LayerNorm(nn.Module):
     """
-    A LayerNorm variant, popularized by Transformers, that performs point-wise mean and
-    variance normalization over the channel dimension for inputs that have shape
-    (batch_size, channels, height, width).
-    https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119  # noqa B950
+    A LayerNorm variant, popularized by Transformers, that performs point-wise mean and variance normalization over the
+    channel dimension for inputs that have shape (batch_size, channels, height, width).
+
+    https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119
+    # noqa B950.
     """
 
     def __init__(self, normalized_shape, eps=1e-6):

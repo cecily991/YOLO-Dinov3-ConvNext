@@ -6,10 +6,11 @@
 import json
 import logging
 import os
+from collections.abc import Sequence
 from contextlib import nullcontext
 from enum import Enum
 from os import PathLike
-from typing import IO, Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import IO, Any, Callable, Optional, Union
 
 import pandas as pd
 import yaml  # type: ignore
@@ -121,18 +122,17 @@ def _assert_valid_dtypes(results: Results) -> None:
 Scalar = Union[str, int, float]
 
 
-def _map_scalar(x: Scalar) -> List[Scalar]:
+def _map_scalar(x: Scalar) -> list[Scalar]:
     return [x]
 
 
-def _map_scalar_list(x: List[Scalar]) -> List[Scalar]:
+def _map_scalar_list(x: list[Scalar]) -> list[Scalar]:
     return x
 
 
-def make(data: Dict[str, Union[str, int, float]]) -> Results:
+def make(data: dict[str, Union[str, int, float]]) -> Results:
     """Construct results from a dictionary of scalars or lists of scalars."""
-
-    map_value: Callable[..., List[Scalar]]
+    map_value: Callable[..., list[Scalar]]
     if all((isinstance(value, Sequence) for key, value in data.items())):
         map_value = _map_scalar_list
     else:
@@ -145,13 +145,11 @@ def make(data: Dict[str, Union[str, int, float]]) -> Results:
 
 def vstack(*results_sequence: Sequence[Results]) -> Results:
     """Concatenate (vertically) results."""
-
     return pd.concat(results_sequence, axis=0, ignore_index=True)
 
 
 def load(f: PathOrFileLikeObject, file_format: Optional[FileFormat] = None) -> Results:
     """Load results from a file via a path-like object or from a file-like object."""
-
     if isinstance(f, (str, PathLike)):
         file_format = FileFormat.guess(f)
     elif file_format is None:
@@ -175,9 +173,8 @@ def load(f: PathOrFileLikeObject, file_format: Optional[FileFormat] = None) -> R
     return results
 
 
-def load_collection(f: PathOrFileLikeObject) -> Dict[str, Results]:
+def load_collection(f: PathOrFileLikeObject) -> dict[str, Results]:
     """Load a collection of results from a file via a path-like object or from a file-like object."""
-
     results_collection = pd.read_excel(f, sheet_name=None)
 
     for sheet_name, results in results_collection.items():
@@ -193,7 +190,6 @@ def save(
     file_format: Optional[FileFormat] = None,
 ) -> None:
     """Save results to a file via a path-like object or to a file-like object."""
-
     _assert_valid_dtypes(results)
 
     if isinstance(f, (str, PathLike)):
@@ -225,7 +221,7 @@ def save(
 
 
 def save_from_dict(
-    results_dict: Dict[str, Union[str, int, float]],
+    results_dict: dict[str, Union[str, int, float]],
     results_path: PathOrFileLikeObject,
 ) -> None:
     results = make(results_dict)
@@ -233,11 +229,10 @@ def save_from_dict(
 
 
 def save_collection(
-    results_collection: Dict[str, Results],
+    results_collection: dict[str, Results],
     f: PathOrFileLikeObject,
 ) -> None:
     """Save a collection of results to a file via a path-like object or to a file-like object."""
-
     if not HAS_OPENPYXL:
         logger.warning("openpyxl need to be installed, passing...")
         return

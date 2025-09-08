@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from torch.utils.data import Dataset
 
@@ -23,9 +23,10 @@ def extend_samples_with_index(dataset_class):
 
 class DatasetWithEnumeratedTargets(Dataset):
     """
-    If pad_dataset is set, pads based on torch's DistributedSampler implementation, which
-    with drop_last=False pads the last batch to be a multiple of the world size.
-    https://github.com/pytorch/pytorch/blob/main/torch/utils/data/distributed.py#L91
+    If pad_dataset is set, pads based on torch's DistributedSampler implementation, which with drop_last=False pads the
+    last batch to be a multiple of the world size.
+
+    https://github.com/pytorch/pytorch/blob/main/torch/utils/data/distributed.py#L91.
     """
 
     def __init__(self, dataset: Dataset, pad_dataset: bool = False, num_replicas: Optional[int] = None):
@@ -45,7 +46,7 @@ class DatasetWithEnumeratedTargets(Dataset):
         assert self._pad_dataset or index < self._size
         return self._dataset.get_image_data(index % self._size)
 
-    def get_target(self, index: int) -> Tuple[Any, int]:
+    def get_target(self, index: int) -> tuple[Any, int]:
         target = self._dataset.get_target(index % self._size)
         if index >= self._size:
             assert self._pad_dataset
@@ -56,7 +57,7 @@ class DatasetWithEnumeratedTargets(Dataset):
         assert self._pad_dataset or index < self._size
         return self._dataset.get_sample_decoder(index % self._size)
 
-    def __getitem__(self, index: int) -> Tuple[Any, Tuple[Any, int]]:
+    def __getitem__(self, index: int) -> tuple[Any, tuple[Any, int]]:
         image, target = self._dataset[index % self._size]
         if index >= self._size:
             assert self._pad_dataset

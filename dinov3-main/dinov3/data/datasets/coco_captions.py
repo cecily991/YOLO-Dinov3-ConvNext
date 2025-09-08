@@ -7,7 +7,7 @@ import json
 import os
 import random
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Optional, Union
 
 from .decoders import ImageDataDecoder, TargetDecoder
 from .extended import ExtendedVisionDataset
@@ -20,17 +20,13 @@ class _Split(Enum):
     VAL = "val"
 
 
-def read_images_and_captions(root: str, split: _Split) -> List[Dict]:
+def read_images_and_captions(root: str, split: _Split) -> list[dict]:
     image_dir = None
     if _Split(split) == _Split.TRAIN:
-        annotations_full_path = os.path.join(
-            root, "annotations_trainval2014/annotations/captions_train2014.json"
-        )
+        annotations_full_path = os.path.join(root, "annotations_trainval2014/annotations/captions_train2014.json")
         image_dir = os.path.join(root, "train2014/train2014")
     else:
-        annotations_full_path = os.path.join(
-            root, "annotations_trainval2017/annotations/captions_train2017.json"
-        )
+        annotations_full_path = os.path.join(root, "annotations_trainval2017/annotations/captions_train2017.json")
         image_dir = os.path.join(root, "val2017/val2017")
     with open(annotations_full_path) as f:
         all_annotations = json.load(f)

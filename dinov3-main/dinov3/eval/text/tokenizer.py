@@ -3,9 +3,10 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import List, Union
+from typing import Union
 
 import torch
+
 from dinov3.thirdparty.CLIP.clip.simple_tokenizer import SimpleTokenizer
 
 
@@ -13,11 +14,9 @@ class Tokenizer(SimpleTokenizer):
     def __init__(self, vocab_path: str):
         SimpleTokenizer.__init__(self, bpe_path=vocab_path)
 
-    def tokenize(
-        self, texts: Union[str, List[str]], context_length: int = 77
-    ) -> torch.LongTensor:
+    def tokenize(self, texts: Union[str, list[str]], context_length: int = 77) -> torch.LongTensor:
         """
-        Returns the tokenized representation of given input string(s)
+        Returns the tokenized representation of given input string(s).
 
         Parameters
         ----------
@@ -58,9 +57,7 @@ def get_tokenizer(bpe_path_or_url: str) -> Tokenizer | None:
                 file_buf = BytesIO(response.read())
                 return Tokenizer(vocab_path=file_buf)
         except Exception as e:
-            raise FileNotFoundError(
-                f"Failed to download file from url {bpe_path_or_url} with error last: {e}"
-            )
+            raise FileNotFoundError(f"Failed to download file from url {bpe_path_or_url} with error last: {e}")
     else:
         with open(bpe_path_or_url, "rb") as f:
             file_buf = BytesIO(f.read())

@@ -4,20 +4,21 @@
 # the terms of the DINOv3 License Agreement.
 
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
-from dinov3.eval.dense.depth.models import build_depther
-from urllib.parse import urlparse
-from pathlib import Path
 
-from .utils import DINOV3_BASE_URL
+from dinov3.eval.dense.depth.models import build_depther
+
 from .backbones import (
     Weights as BackboneWeights,
-    dinov3_vitl16,
-    dinov3_vit7b16,
-    convert_path_or_url_to_url,
 )
+from .backbones import (
+    convert_path_or_url_to_url,
+    dinov3_vit7b16,
+    dinov3_vitl16,
+)
+from .utils import DINOV3_BASE_URL
 
 
 class DepthWeights(Enum):
@@ -69,7 +70,7 @@ def _make_dinov3_dpt_depther(
     pretrained: bool = True,
     depther_weights: DepthWeights | str = DepthWeights.SYNTHMIX,
     backbone_weights: BackboneWeights | str = BackboneWeights.LVD1689M,
-    depth_range: Optional[Tuple[float, float]] = None,
+    depth_range: Optional[tuple[float, float]] = None,
     check_hash: bool = False,
     backbone_dtype: torch.dtype = torch.float32,
     **kwargs,

@@ -5,7 +5,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar
 
 import torch
 from torch.utils.data import Sampler
@@ -184,7 +184,7 @@ def make_data_loader(
     sampler_advance: int = 0,
     drop_last: bool = True,
     persistent_workers: bool = False,
-    collate_fn: Optional[Callable[[List[T]], Any]] = None,
+    collate_fn: Optional[Callable[[list[T]], Any]] = None,
 ):
     """
     Creates a data loader with the specified parameters.
@@ -202,7 +202,6 @@ def make_data_loader(
         persistent_workers: maintain the workers Dataset instances alive after a dataset has been consumed once.
         collate_fn: Function that performs batch collation
     """
-
     sampler = _make_sampler(
         dataset=dataset,
         type=sampler_type,

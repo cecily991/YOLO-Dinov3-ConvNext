@@ -28,12 +28,12 @@ from dinov3.checkpointer import (
 )
 from dinov3.configs import setup_config, setup_job, setup_multidistillation
 from dinov3.data import (
+    CombinedDataLoader,
     MaskingGenerator,
     SamplerType,
     collate_data_and_cast,
     make_data_loader,
     make_dataset,
-    CombinedDataLoader,
 )
 from dinov3.logging import MetricLogger, setup_logging
 from dinov3.train.cosine_lr_scheduler import CosineScheduler, linear_warmup_cosine_decay

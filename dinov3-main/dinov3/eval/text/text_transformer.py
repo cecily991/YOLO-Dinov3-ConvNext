@@ -3,10 +3,11 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
+
 from dinov3.layers import CausalSelfAttentionBlock
 
 
@@ -60,7 +61,7 @@ class TextTransformer(nn.Module):
             block.init_weights(init_attn_std, init_proj_std, init_fc_std)
         self.ln_final.reset_parameters()
 
-    def forward(self, token_indices: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, token_indices: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         _, N = token_indices.size()
         x = self.token_embedding(token_indices) + self.positional_embedding[:N]
         x = self.dropout(x)
