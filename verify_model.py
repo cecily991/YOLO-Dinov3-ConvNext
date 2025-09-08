@@ -8,7 +8,7 @@ from ultralytics.utils.torch_utils import select_device
 print("--- Starting Model Verification ---")
 
 # 1. 指定你的配置文件和设备
-cfg_path = 'configs/yolo11-dinov3-tiny.yaml'
+cfg_path = 'configs/yolo11-dinov3.yaml'
 device = select_device('cpu') # 使用CPU即可，无需GPU
 print(f"Loading model from configuration: {cfg_path}")
 
