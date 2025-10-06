@@ -16,7 +16,7 @@ import dinov3.distributed as distributed
 logger = logging.getLogger("dinov3")
 
 
-class MetricLogger(object):
+class MetricLogger:
     def __init__(self, delimiter="\t", output_file=None):
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter
@@ -34,12 +34,12 @@ class MetricLogger(object):
             return self.meters[attr]
         if attr in self.__dict__:
             return self.__dict__[attr]
-        raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, attr))
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
 
     def __str__(self):
         loss_str = []
         for name, meter in self.meters.items():
-            loss_str.append("{}: {}".format(name, str(meter)))
+            loss_str.append(f"{name}: {str(meter)}")
         return self.delimiter.join(loss_str)
 
     def synchronize_between_processes(self):
@@ -130,13 +130,11 @@ class MetricLogger(object):
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         s_it = total_time / n_iterations if n_iterations > 0 else 0
-        logger.info("{} Total time: {} ({:.6f} s / it)".format(header, total_time_str, s_it))
+        logger.info(f"{header} Total time: {total_time_str} ({s_it:.6f} s / it)")
 
 
 class SmoothedValue:
-    """Track a series of values and provide access to smoothed values over a
-    window or the global series average.
-    """
+    """Track a series of values and provide access to smoothed values over a window or the global series average."""
 
     def __init__(self, window_size=20, fmt=None):
         if fmt is None:

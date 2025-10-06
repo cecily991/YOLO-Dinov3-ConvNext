@@ -7,8 +7,9 @@
 # Adapted from: https://github.com/facebookresearch/detr/blob/master/models/detr.py
 
 from typing import Optional
+
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
 
 from dinov3.eval.segmentation.models.utils.position_encoding import PositionEmbeddingSine
@@ -16,8 +17,7 @@ from dinov3.eval.segmentation.models.utils.position_encoding import PositionEmbe
 
 def c2_xavier_fill(module: nn.Module) -> None:
     """
-    Initialize `module.weight` using the "XavierFill" implemented in Caffe2.
-    Also initializes `module.bias` to 0.
+    Initialize `module.weight` using the "XavierFill" implemented in Caffe2. Also initializes `module.bias` to 0.
 
     Args:
         module (torch.nn.Module): module to initialize.
@@ -33,9 +33,7 @@ def c2_xavier_fill(module: nn.Module) -> None:
 
 
 class Conv2d(torch.nn.Conv2d):
-    """
-    A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features.
-    """
+    """A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features."""
 
     def __init__(self, *args, **kwargs):
         """
@@ -243,7 +241,7 @@ class FFNLayer(nn.Module):
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Return an activation function given a string."""
     if activation == "relu":
         return F.relu
     if activation == "gelu":
@@ -254,7 +252,7 @@ def _get_activation_fn(activation):
 
 
 class MLP(nn.Module):
-    """Very simple multi-layer perceptron (also called FFN)"""
+    """Very simple multi-layer perceptron (also called FFN)."""
 
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
         super().__init__()
@@ -286,6 +284,7 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
     ):
         """
         NOTE: this interface is experimental.
+
         Args:
             in_channels: channels of the input features
             mask_classification: whether to add mask classifier or not
@@ -299,7 +298,7 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
             pre_norm: whether to use pre-LayerNorm or not
             mask_dim: mask feature dimension
             enforce_input_project: add input project 1x1 conv even if input
-                channels and hidden dim is identical
+                channels and hidden dim is identical.
         """
         super().__init__()
 

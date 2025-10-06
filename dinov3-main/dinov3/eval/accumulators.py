@@ -5,7 +5,7 @@
 
 import logging
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -15,7 +15,7 @@ from dinov3.distributed import gather_all_tensors  # Gathers tensors of differen
 logger = logging.getLogger("fairvit")
 
 
-def _cat_and_gather_tensor_list(tensor_list: List[Tensor]) -> Tensor:
+def _cat_and_gather_tensor_list(tensor_list: list[Tensor]) -> Tensor:
     local_cat = torch.cat(tensor_list)
     return torch.cat(gather_all_tensors(local_cat))
 
@@ -27,7 +27,7 @@ class Accumulator:
     def update(self, preds: Tensor, target: Tensor, index: Tensor) -> None:
         raise NotImplementedError
 
-    def accumulate(self) -> Optional[Dict[str, Tensor]]:
+    def accumulate(self) -> Optional[dict[str, Tensor]]:
         raise NotImplementedError
 
 
@@ -43,13 +43,11 @@ class NoOpAccumulator(Accumulator):
 
 
 class ResultsAccumulator(Accumulator):
-    """
-    Accumulate predictions and targets across processes
-    """
+    """Accumulate predictions and targets across processes."""
 
     def __init__(self) -> None:
-        self._local_values: Dict[str, List[Tensor]] = defaultdict(list)
-        self._gathered_values: Dict[str, Tensor] = {}
+        self._local_values: dict[str, list[Tensor]] = defaultdict(list)
+        self._gathered_values: dict[str, Tensor] = {}
         self._gathered = False
 
     def update(self, preds: Tensor, target: Tensor, index: Tensor) -> None:
@@ -65,7 +63,7 @@ class ResultsAccumulator(Accumulator):
             self._gathered_values[k] = _cat_and_gather_tensor_list(tensor_list)
         self._gathered = True
 
-    def accumulate(self) -> Dict[str, Tensor]:
+    def accumulate(self) -> dict[str, Tensor]:
         if not self._gathered:
             self._gather_tensors()
         preds, target, index = [self._gathered_values[k] for k in ["preds", "target", "index"]]

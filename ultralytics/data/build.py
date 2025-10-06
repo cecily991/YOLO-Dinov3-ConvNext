@@ -2,8 +2,9 @@
 
 import os
 import random
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator
+from typing import Any
 
 import numpy as np
 import torch
@@ -116,7 +117,7 @@ def build_yolo_dataset(
     cfg: IterableSimpleNamespace,
     img_path: str,
     batch: int,
-    data: Dict[str, Any],
+    data: dict[str, Any],
     mode: str = "train",
     rect: bool = False,
     stride: int = 32,

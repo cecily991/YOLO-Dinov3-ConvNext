@@ -6,7 +6,7 @@
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
 class ClusterType(Enum):
@@ -84,7 +84,7 @@ def get_slurm_executor_parameters(
     num_gpus_per_node: int,
     cluster_type: Optional[ClusterType] = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     # create default parameters
     params = {
         "mem_gb": 0,  # Requests all memory on a node, see https://slurm.schedmd.com/sbatch.html

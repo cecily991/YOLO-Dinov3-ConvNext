@@ -54,7 +54,7 @@ class SinkhornKnoppTeacher(nn.Module):
             Q /= torch.sum(Q, dim=0, keepdim=True)
             Q /= B
 
-        Q *= B  # the colomns must sum to 1 so that Q is an assignment
+        Q *= B  # the columns must sum to 1 so that Q is an assignment
         return Q.t()
 
 
@@ -83,9 +83,10 @@ class iBOTPatchLoss(nn.Module):
     def forward(self, student_patch_tokens, teacher_patch_tokens, student_masks_flat):
         """
         Cross-entropy between softmax outputs of the teacher and student networks.
+
         student_patch_tokens: (B, N, D) tensor
         teacher_patch_tokens: (B, N, D) tensor
-        student_masks_flat: (B, N) tensor
+        student_masks_flat: (B, N) tensor.
         """
         t = teacher_patch_tokens
         s = student_patch_tokens

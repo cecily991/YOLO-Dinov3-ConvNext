@@ -15,18 +15,17 @@ from ..util.misc import NestedTensor
 
 class WindowsWrapper(torch.nn.Module):
     """
-    This wrapper will take an input (NestedTensor) at size (h, w) and split it
-    in `N = n_windows_h * n_windows_w` equally sized windows (the bottom and right windows might
-    be a little bit smaller), with sizes that are multiples of the patch size (as the input should be).
+    This wrapper will take an input (NestedTensor) at size (h, w) and split it in `N = n_windows_h * n_windows_w`
+    equally sized windows (the bottom and right windows might be a little bit smaller), with sizes that are multiples of
+    the patch size (as the input should be).
 
-    Then, the input will be resized at the size of the top left window (h / n_windows_h, w / n_windows_w).
-    This resized input, plus the N windows, will be passed through the backbone.
-    Then, the features of the resized input will be resized to the original input size, while the
-    features of the windows will be concatenated side by side to reconstruct a feature map also
-    corresponding to the original image's size.
+    Then, the input will be resized at the size of the top left window (h / n_windows_h, w / n_windows_w). This resized
+    input, plus the N windows, will be passed through the backbone. Then, the features of the resized input will be
+    resized to the original input size, while the features of the windows will be concatenated side by side to
+    reconstruct a feature map also corresponding to the original image's size.
 
-    Finally, both the features from the windows and from the resized images are stacked.
-    Compared to the output of the backbone of size [B, C, H, W], the output here is [B, 2 * C, H, W]
+    Finally, both the features from the windows and from the resized images are stacked. Compared to the output of the
+    backbone of size [B, C, H, W], the output here is [B, 2 * C, H, W]
     """
 
     def __init__(self, backbone, n_windows_w, n_windows_h, patch_size):

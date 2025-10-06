@@ -5,7 +5,7 @@
 
 import logging
 from functools import partial
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import torch
 import torch.distributed as dist
@@ -35,20 +35,20 @@ def map_modules_and_blocks(models: list[nn.ModuleDict], callable) -> None:
 
 def ac_compile_parallelize(
     trained_model: nn.ModuleDict,
-    inference_only_models: List[nn.ModuleDict],
+    inference_only_models: list[nn.ModuleDict],
     cfg: Any,
     trained_model_process_group: Optional[dist.ProcessGroup] = None,
-    inference_only_models_process_groups: Optional[List[dist.ProcessGroup]] = None,
+    inference_only_models_process_groups: Optional[list[dist.ProcessGroup]] = None,
 ) -> None:
     """
     Order of the wrappers:
     1/ Activation checkpointing on blocks
     2/ Compile blocks
-    3/ FSDP blocks + global model
+    3/ FSDP blocks + global model.
     """
-    assert (
-        isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model.keys()
-    ), f"{trained_model} does not contain a backbone?"
+    assert isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model.keys(), (
+        f"{trained_model} does not contain a backbone?"
+    )
     logger.info("DISTRIBUTED FSDP -- preparing model for distributed training")
     if utils.has_batchnorms(trained_model):
         raise NotImplementedError

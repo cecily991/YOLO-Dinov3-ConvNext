@@ -21,7 +21,7 @@ class MultiDistillationMetaArch(SSLMetaArch):
     - always separate heads for DINO and IBOT
     - always sinkhorn-knopp centering for DINO and IBOT
     - always per-GPU computation of KOLEO loss (non-distributed)
-    - DINO, IBOT, and KOLEO are always computed even if their weight is 0.0
+    - DINO, IBOT, and KOLEO are always computed even if their weight is 0.0.
     """
 
     def forward_backward(

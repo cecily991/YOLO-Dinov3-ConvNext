@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 import torch.nn.functional as F
 from torch import Tensor, nn
@@ -11,11 +11,11 @@ from torch import Tensor, nn
 from dinov3.utils import cat_keep_shapes, uncat_with_shapes
 
 
-class ListForwardMixin(object):
+class ListForwardMixin:
     def forward(self, x: Tensor):
         raise NotImplementedError
 
-    def forward_list(self, x_list: List[Tensor]) -> List[Tensor]:
+    def forward_list(self, x_list: list[Tensor]) -> list[Tensor]:
         x_flat, shapes, num_tokens = cat_keep_shapes(x_list)
         x_flat = self.forward(x_flat)
         return uncat_with_shapes(x_flat, shapes, num_tokens)

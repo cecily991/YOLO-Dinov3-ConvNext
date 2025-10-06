@@ -4,26 +4,25 @@
 # the terms of the DINOv3 License Agreement.
 
 import logging
-from typing import Any, Iterable, Iterator, List, Tuple, TypeVar
+from collections.abc import Iterable, Iterator
+from typing import Any, TypeVar
 
 import numpy as np
 
 logger = logging.getLogger("dinov3")
-Loader = Iterable[List[Any]]
+Loader = Iterable[list[Any]]
 T = TypeVar("T")
 
 
 class CombinedDataLoader:
-    """
-    Combines data loaders using the provided sampling ratios
-    """
+    """Combines data loaders using the provided sampling ratios."""
 
     GLOBAL_HOMOGENEOUS = 0
     LOCAL_HOMOGENEOUS = 1
 
     def __init__(
         self,
-        loaders_with_ratios: Iterable[Tuple[Loader, float]],
+        loaders_with_ratios: Iterable[tuple[Loader, float]],
         batch_size: int,
         combining_mode: int = 1,
         seed: int = 65537,
@@ -53,7 +52,7 @@ class CombinedDataLoader:
             self.rng = np.random.default_rng()
         self.loader_count = np.zeros(len(self.loaders))
 
-    def homogeneous_iterator(self) -> Iterator[List[Any]]:
+    def homogeneous_iterator(self) -> Iterator[list[Any]]:
         iteration = 0
         iters = [iter(loader) for loader in self.loaders]
         while True:
@@ -67,10 +66,10 @@ class CombinedDataLoader:
             except StopIteration:
                 break
 
-    def heterogeneous_iterator(self) -> Iterator[List[Any]]:
+    def heterogeneous_iterator(self) -> Iterator[list[Any]]:
         pass
 
-    def __iter__(self) -> Iterator[List[Any]]:
+    def __iter__(self) -> Iterator[list[Any]]:
         if self.combining_mode in [self.GLOBAL_HOMOGENEOUS, self.LOCAL_HOMOGENEOUS]:
             logger.info(f"Using homogeneous iterator for CDL {self.name}")
             return self.homogeneous_iterator()
