@@ -5,7 +5,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -139,28 +139,27 @@ def build_classification_metric(
 
 
 def build_topk_accuracy_metric(average_type: AveragingMethod, num_classes: int, ks: tuple = (1, 5)):
-    metrics: Dict[str, Metric] = {
+    metrics: dict[str, Metric] = {
         f"top-{k}": MulticlassAccuracy(top_k=k, num_classes=int(num_classes), average=average_type.value) for k in ks
     }
     return MetricCollection(metrics)
 
 
 def build_topk_recall_metric(average_type: AveragingMethod, num_classes: int, ks: tuple = (1, 5)):
-    metrics: Dict[str, Metric] = {
+    metrics: dict[str, Metric] = {
         f"top-{k}": MulticlassRecall(top_k=k, num_classes=int(num_classes), average=average_type.value) for k in ks
     }
     return MetricCollection(metrics)
 
 
 def build_topk_any_match_accuracy_metric(num_classes: int, ks: tuple = (1, 5)):
-    metrics: Dict[str, Metric] = {f"top-{k}": AnyMatchAccuracy(top_k=k, num_classes=int(num_classes)) for k in ks}
+    metrics: dict[str, Metric] = {f"top-{k}": AnyMatchAccuracy(top_k=k, num_classes=int(num_classes)) for k in ks}
     return MetricCollection(metrics)
 
 
 class MeanAveragePrecisionVOC2007(MultilabelPrecisionRecallCurve):
-    """
-    VOC2007 11-points mAP Evaluation defined on page 11 of
-    The PASCAL Visual Object Classes (VOC) Challenge (Everingham et al., 2010)
+    """VOC2007 11-points mAP Evaluation defined on page 11 of The PASCAL Visual Object Classes (VOC) Challenge
+    (Everingham et al., 2010).
     """
 
     def __init__(self, *args, recall_level_count: int = 11, **kwargs):
@@ -176,9 +175,8 @@ class MeanAveragePrecisionVOC2007(MultilabelPrecisionRecallCurve):
 
 
 class AnyMatchAccuracy(Metric):
-    """
-    This computes an accuracy where an element is considered correctly
-    predicted if one of the predictions is in a list of targets
+    """This computes an accuracy where an element is considered correctly predicted if one of the predictions is in a
+    list of targets.
     """
 
     is_differentiable: bool = False
@@ -233,7 +231,7 @@ class GroupByAnyMatchAccuracy(AnyMatchAccuracy):
     ) -> None:
         super().__init__(**kwargs)
         assert hasattr(dataset, "get_groupby_labels"), "The dataset should have a `get_groupby_labels` method"
-        self._groupby_labels: Dict[str, np.ndarray] = dataset.get_groupby_labels()
+        self._groupby_labels: dict[str, np.ndarray] = dataset.get_groupby_labels()
         assert hasattr(dataset, "get_mapped_targets"), "The dataset should have a `get_mapped_targets` method"
         self._mapped_targets: torch.Tensor = torch.from_numpy(dataset.get_mapped_targets())
         self.add_state("indices", [], dist_reduce_fx="cat")
@@ -242,7 +240,7 @@ class GroupByAnyMatchAccuracy(AnyMatchAccuracy):
         self.indices.append(target)  # target are indices in this case
         super().update(preds, self._mapped_targets[target.tolist()].to(preds.device))
 
-    def groupby_metric(self, variable: np.ndarray, indices: np.ndarray, tp: torch.Tensor) -> Dict[Any, Tensor]:
+    def groupby_metric(self, variable: np.ndarray, indices: np.ndarray, tp: torch.Tensor) -> dict[Any, Tensor]:
         groubpy_dict = {}
         for v in set(variable):
             index = np.where(variable[indices] == v)[0]
@@ -256,7 +254,7 @@ class GroupByAnyMatchAccuracy(AnyMatchAccuracy):
         results_dict = {"top-1": global_score}
         for label_name, label_value in self._groupby_labels.items():
             groupby_results = self.groupby_metric(label_value, indices, tp)
-            printable_results = {k: f"{100. * v.item():.4g}" for k, v in groupby_results.items()}
+            printable_results = {k: f"{100.0 * v.item():.4g}" for k, v in groupby_results.items()}
             logger.info(f"Scores by {label_name} {printable_results}\n")
             results_dict = {**results_dict, **groupby_results}
         return results_dict
@@ -265,14 +263,14 @@ class GroupByAnyMatchAccuracy(AnyMatchAccuracy):
 class MacroAveragedMeanReciprocalRank(Metric):
     """
     This computes the macro average mean reciprocal rank metric.
-    Rank is defined as the position at which the target label is found when
-    we sort the prediction scores from most probable label to least probable
-    The reciprocal of the rank (1 / rank) which lies in [0, 1] gives a measure on how well the model does.
-    the higher the rank the better the model. The reciprocal rank of each sample is aggregated by the target
-    label and we sum those aggregates groupby the target labels. This quantity is divided by the number of
-    samples per label which gives as per label or macro reciprocal rank performance. This per label metric is
-    avergaed across all the labels to get the macro averaged mean reciprocal rank metric. This metric is
-    useful when we have label imbalance and we want to give equal importance to rare labels as well as frequent labels.
+
+    Rank is defined as the position at which the target label is found when we sort the prediction scores from most
+    probable label to least probable The reciprocal of the rank (1 / rank) which lies in [0, 1] gives a measure on how
+    well the model does. the higher the rank the better the model. The reciprocal rank of each sample is aggregated by
+    the target label and we sum those aggregates groupby the target labels. This quantity is divided by the number of
+    samples per label which gives as per label or macro reciprocal rank performance. This per label metric is avergaed
+    across all the labels to get the macro averaged mean reciprocal rank metric. This metric is useful when we have
+    label imbalance and we want to give equal importance to rare labels as well as frequent labels.
     """
 
     is_differentiable: bool = False
@@ -316,7 +314,7 @@ class MacroAveragedMeanReciprocalRank(Metric):
 
 
 def accuracy(output, target, topk=(1,)):
-    """Computes the accuracy over the k top predictions for the specified values of k"""
+    """Computes the accuracy over the k top predictions for the specified values of k."""
     maxk = max(topk)
     batch_size = target.size(0)
     _, pred = output.topk(maxk, 1, True, True)

@@ -4,15 +4,15 @@
 # the terms of the DINOv3 License Agreement.
 
 import logging
+from collections.abc import Sequence
 from functools import partial
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Optional, Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn.init
 from torch import Tensor, nn
-
 
 logger = logging.getLogger("dinov3")
 
@@ -32,7 +32,7 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None) -> None:
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x: Tensor) -> Tensor:
@@ -40,10 +40,10 @@ class DropPath(nn.Module):
 
 
 class Block(nn.Module):
-    r"""ConvNeXt Block. There are two equivalent implementations:
-    (1) DwConv -> LayerNorm (channels_first) -> 1x1 Conv -> GELU -> 1x1 Conv; all in (N, C, H, W)
-    (2) DwConv -> Permute to (N, H, W, C); LayerNorm (channels_last) -> Linear -> GELU -> Linear; Permute back
-    We use (2) as we find it slightly faster in PyTorch
+    r"""
+    ConvNeXt Block. There are two equivalent implementations: (1) DwConv -> LayerNorm (channels_first) -> 1x1 Conv ->
+    GELU -> 1x1 Conv; all in (N, C, H, W) (2) DwConv -> Permute to (N, H, W, C); LayerNorm (channels_last) -> Linear ->
+    GELU -> Linear; Permute back We use (2) as we find it slightly faster in PyTorch.
 
     Args:
         dim (int): Number of input channels.
@@ -61,7 +61,7 @@ class Block(nn.Module):
         self.act = nn.GELU()
         self.pwconv2 = nn.Linear(4 * dim, dim)
         self.gamma = (
-            nn.Parameter(layer_scale_init_value * torch.ones((dim)), requires_grad=True)
+            nn.Parameter(layer_scale_init_value * torch.ones(dim), requires_grad=True)
             if layer_scale_init_value > 0
             else None
         )
@@ -115,7 +115,7 @@ class LayerNorm(nn.Module):
 
 class ConvNeXt(nn.Module):
     r"""
-    Code adapted from https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.pyConvNeXt
+    Code adapted from https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.pyConvNeXt.
 
     A PyTorch impl of : `A ConvNet for the 2020s`  -
         https://arxiv.org/pdf/2201.03545.pdf
@@ -134,8 +134,8 @@ class ConvNeXt(nn.Module):
         self,
         # original ConvNeXt arguments
         in_chans: int = 3,
-        depths: List[int] = [3, 3, 9, 3],
-        dims: List[int] = [96, 192, 384, 768],
+        depths: list[int] = [3, 3, 9, 3],
+        dims: list[int] = [96, 192, 384, 768],
         drop_path_rate: float = 0.0,
         layer_scale_init_value: float = 1e-6,
         # DINO arguments
@@ -204,13 +204,13 @@ class ConvNeXt(nn.Module):
             torch.nn.init.trunc_normal_(module.weight, std=0.02)
             nn.init.constant_(module.bias, 0)
 
-    def forward_features(self, x: Tensor | List[Tensor], masks: Optional[Tensor] = None) -> List[Dict[str, Tensor]]:
+    def forward_features(self, x: Tensor | list[Tensor], masks: Optional[Tensor] = None) -> list[dict[str, Tensor]]:
         if isinstance(x, torch.Tensor):
             return self.forward_features_list([x], [masks])[0]
         else:
             return self.forward_features_list(x, masks)
 
-    def forward_features_list(self, x_list: List[Tensor], masks_list: List[Tensor]) -> List[Dict[str, Tensor]]:
+    def forward_features_list(self, x_list: list[Tensor], masks_list: list[Tensor]) -> list[dict[str, Tensor]]:
         output = []
         for x, masks in zip(x_list, masks_list):
             h, w = x.shape[-2:]

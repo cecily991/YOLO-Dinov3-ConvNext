@@ -5,7 +5,7 @@
 
 import os
 from enum import Enum
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 from PIL import Image
 
@@ -30,13 +30,13 @@ def _file_to_segmentation_path(file_name: str, segm_base_path: str) -> str:
     return os.path.join(segm_base_path, file_name_noext + ".png")
 
 
-def _load_segmentation(root: str, split_file_names: List[str]):
+def _load_segmentation(root: str, split_file_names: list[str]):
     segm_base_path = "annotations"
     segmentation_paths = [_file_to_segmentation_path(file_name, segm_base_path) for file_name in split_file_names]
     return segmentation_paths
 
 
-def _load_file_paths(root: str, split: _Split) -> Tuple[List[str], List[str]]:
+def _load_file_paths(root: str, split: _Split) -> tuple[list[str], list[str]]:
     with open(os.path.join(root, f"ADE20K_object150_{split.value}.txt")) as f:
         split_file_names = sorted(f.read().strip().split("\n"))
 

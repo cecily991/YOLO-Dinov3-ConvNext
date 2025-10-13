@@ -7,13 +7,16 @@ import os
 from enum import Enum
 
 import torch
+
 from dinov3.eval.segmentation.models import build_segmentation_decoder
 
 from .backbones import (
+    Weights as BackboneWeights,
+)
+from .backbones import (
+    convert_path_or_url_to_url,
     dinov3_vit7b16,
     dinov3_vitl16,
-    Weights as BackboneWeights,
-    convert_path_or_url_to_url,
 )
 from .utils import DINOV3_BASE_URL
 
@@ -49,7 +52,9 @@ def _make_dinov3_m2f_segmentor(
     )
     if pretrained:
         if type(segmentor_weights) is SegmentorWeights:
-            assert segmentor_weights == SegmentorWeights.ADE20K, f"Unsupported weights for segmentor: {segmentor_weights}"
+            assert segmentor_weights == SegmentorWeights.ADE20K, (
+                f"Unsupported weights for segmentor: {segmentor_weights}"
+            )
             segmentor_weights_name = segmentor_weights.value.lower()
             hash = kwargs["hash"] if "hash" in kwargs else "bf307cb1"
             model_filename = f"{backbone_name}_{segmentor_weights_name}_m2f_head-{hash}.pth"

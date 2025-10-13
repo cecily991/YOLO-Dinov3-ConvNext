@@ -11,7 +11,7 @@ from functools import lru_cache
 from gzip import GzipFile
 from io import BytesIO
 from mmap import ACCESS_READ, mmap
-from typing import Any, Callable, List, Optional, Set, Tuple
+from typing import Any, Callable, Optional
 
 import numpy as np
 
@@ -67,7 +67,7 @@ def _make_mmap_tarball(tarballs_root: str, mmap_cache_size: int):
 
 
 class ImageNet22k(ExtendedVisionDataset):
-    _GZIPPED_INDICES: Set[int] = {
+    _GZIPPED_INDICES: set[int] = {
         841_545,
         1_304_131,
         2_437_921,
@@ -125,7 +125,7 @@ class ImageNet22k(ExtendedVisionDataset):
     def _get_class_ids_path(self, root: Optional[str] = None) -> str:
         return "class-ids.npy"
 
-    def _find_class_ids(self, path: str) -> List[str]:
+    def _find_class_ids(self, path: str) -> list[str]:
         class_ids = []
 
         with os.scandir(path) as entries:
@@ -137,9 +137,9 @@ class ImageNet22k(ExtendedVisionDataset):
 
         return sorted(class_ids)
 
-    def _load_entries_class_ids(self, root: Optional[str] = None) -> Tuple[List[_Entry], List[str]]:
+    def _load_entries_class_ids(self, root: Optional[str] = None) -> tuple[list[_Entry], list[str]]:
         root = self.get_root(root)
-        entries: List[_Entry] = []
+        entries: list[_Entry] = []
         class_ids = self._find_class_ids(root)
 
         for class_index, class_id in enumerate(class_ids):
@@ -214,7 +214,7 @@ class ImageNet22k(ExtendedVisionDataset):
                 with GzipFile(fileobj=BytesIO(data)) as g:
                     data = g.read()
         except Exception as e:
-            raise RuntimeError(f"can not retrieve image data for sample {index} " f'from "{class_id}" tarball') from e
+            raise RuntimeError(f'can not retrieve image data for sample {index} from "{class_id}" tarball') from e
 
         return data
 
@@ -230,7 +230,7 @@ class ImageNet22k(ExtendedVisionDataset):
     def get_class_ids(self) -> np.ndarray:
         return self._entries["class_id"]
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    def __getitem__(self, index: int) -> tuple[Any, Any]:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return super().__getitem__(index)

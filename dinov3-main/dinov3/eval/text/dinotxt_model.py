@@ -5,7 +5,7 @@
 
 import math
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -91,7 +91,7 @@ class DINOTxt(nn.Module):
         self,
         image: torch.Tensor,
         normalize: bool = False,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         features, patch_tokens, backbone_patch_tokens = self.visual_model(image)
         return (
             F.normalize(features, dim=-1) if normalize else features,
@@ -111,9 +111,7 @@ class DINOTxt(nn.Module):
         features = self.text_model(text)
         return F.normalize(features, dim=-1) if normalize else features
 
-    def get_logits(
-        self, image: torch.Tensor, text: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_logits(self, image: torch.Tensor, text: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         text_features = self.encode_text(text, normalize=True)
         image_features = self.encode_image(image, normalize=True)
         image_logits = self.logit_scale.exp() * image_features @ text_features.T
@@ -124,11 +122,9 @@ class DINOTxt(nn.Module):
         self,
         image: torch.Tensor,
         text: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         text_features = self.encode_text(text, normalize=True)
-        image_features, patch_tokens, backbone_patch_tokens = (
-            self.encode_image_with_patch_tokens(image, normalize=True)
-        )
+        image_features, patch_tokens, backbone_patch_tokens = self.encode_image_with_patch_tokens(image, normalize=True)
         return (
             image_features,
             text_features,

@@ -7,7 +7,7 @@ import csv
 import logging
 import os
 from enum import Enum
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 
@@ -43,7 +43,7 @@ class _Split(Enum):
             basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
         return os.path.join(dirname, basename + ".JPEG")
 
-    def parse_image_relpath(self, image_relpath: str) -> Tuple[str, int]:
+    def parse_image_relpath(self, image_relpath: str) -> tuple[str, int]:
         assert self != _Split.TEST
         dirname, filename = os.path.split(image_relpath)
         class_id = os.path.split(dirname)[-1]
@@ -175,12 +175,12 @@ class ImageNet(ExtendedVisionDataset):
         assert len(entries) == self.split.length
         return len(entries)
 
-    def _load_labels(self, labels_path: str) -> List[Tuple[str, str]]:
+    def _load_labels(self, labels_path: str) -> list[tuple[str, str]]:
         labels_full_path = os.path.join(self.root, labels_path)
         labels = []
 
         try:
-            with open(labels_full_path, "r") as f:
+            with open(labels_full_path) as f:
                 reader = csv.reader(f)
                 for row in reader:
                     class_id, class_name = row

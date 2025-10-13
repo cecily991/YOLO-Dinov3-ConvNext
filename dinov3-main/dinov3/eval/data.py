@@ -43,10 +43,11 @@ def get_target_transform(dataset) -> Optional[Callable]:
 @lru_cache(maxsize=1)
 def get_labels(dataset) -> torch.Tensor:
     """
-    Get the labels of a classification dataset, as a Tensor, using the `get_targets` method
-    if it is present or loading the labels one by one with `get_target`, if it exists.
-    If the dataset has a target transform, iterate over the whole dataset to get the
-    transformed labels for each element, then stack them as a torch tensor.
+    Get the labels of a classification dataset, as a Tensor, using the `get_targets` method if it is present or loading
+    the labels one by one with `get_target`, if it exists.
+
+    If the dataset has a target transform, iterate over the whole dataset to get the transformed labels for each
+    element, then stack them as a torch tensor.
     """
     logger.info("Getting dataset labels ...")
     if hasattr(dataset, "get_targets") or hasattr(dataset, "get_target"):
@@ -64,9 +65,7 @@ def get_labels(dataset) -> torch.Tensor:
 
 
 def get_num_classes(dataset) -> int:
-    """
-    Get the labels of a dataset and compute the number of classes
-    """
+    """Get the labels of a dataset and compute the number of classes."""
     labels = get_labels(dataset)
     if len(labels.shape) > 1:
         return int(labels.shape[1])
@@ -75,10 +74,10 @@ def get_num_classes(dataset) -> int:
 
 def create_class_indices_mapping(labels: torch.Tensor) -> dict[int, torch.Tensor]:
     """
-    Efficiently creates a mapping between the labels and tensors containing
-    the indices of all the dataset elements that share this label.
-    In the case of multiple labels, it is not guaranteed that there
-    will be exactly the specified percentage of labels.
+    Efficiently creates a mapping between the labels and tensors containing the indices of all the dataset elements that
+    share this label.
+
+    In the case of multiple labels, it is not guaranteed that there will be exactly the specified percentage of labels.
     """
     if len(labels.shape) > 1:  # labels are a one-hot encoding
         assert len(labels.shape) == 2
@@ -91,9 +90,7 @@ def create_class_indices_mapping(labels: torch.Tensor) -> dict[int, torch.Tensor
 
 
 def _shuffle_dataset(dataset: torch.Tensor, seed: int = 0):
-    """
-    Shuffling a dataset by subsetting it with a random permutation of its indices
-    """
+    """Shuffling a dataset by subsetting it with a random permutation of its indices."""
     random_generator = torch.Generator()
     random_generator.manual_seed(seed)
     random_indices = torch.randperm(len(dataset), generator=random_generator)
@@ -108,11 +105,11 @@ def _subset_dataset_per_class(
     is_percent: bool = False,
 ) -> torch.Tensor:
     """
-    Helper function to select a percentage of a dataset, equally distributed across classes,
-    or to take the same number of elements from each class of the dataset.
-    Returns a boolean mask tensor being True at indices of selected elements
-    """
+    Helper function to select a percentage of a dataset, equally distributed across classes, or to take the same number
+    of elements from each class of the dataset.
 
+    Returns a boolean mask tensor being True at indices of selected elements.
+    """
     random_generator = torch.Generator()
     random_generator.manual_seed(seed)
 
@@ -135,18 +132,18 @@ def _multilabel_rebalance_subset(
     seed: int = 0,
 ) -> torch.Tensor:
     """
-    Helper function to refine a subset of a multi-label dataset (indices_bool)
-    to better match a target percentage of labels.
+    Helper function to refine a subset of a multi-label dataset (indices_bool) to better match a target percentage of
+    labels.
+
     Returns a boolean mask tensor being True at indices of selected elements.
     """
-
     # Compute the number of selected labels in indices_bool
     num_total_labels = labels.sum()
     num_wanted_labels = int(num_total_labels * n_or_percent_per_class)
     num_selected_labels = (labels[indices_bool] > 0).sum()
     logger.info(f" {num_selected_labels} labels instead of {num_wanted_labels}")
 
-    # Compute a new percentage and new set selecting less images, therefore less labels, to match approximatelly the exact percentage of labels selected
+    # Compute a new percentage and new set selecting less images, therefore less labels, to match approximately the exact percentage of labels selected
     n_or_percent_per_class = n_or_percent_per_class / (num_selected_labels / num_wanted_labels)
     final_indices_bool = _subset_dataset_per_class(
         class_indices_mapping, n_or_percent_per_class, dataset_size, seed, True
@@ -162,6 +159,7 @@ def _multilabel_rebalance_subset(
 def split_train_val_datasets(train_dataset, split_percentage: float = 0.1, shuffle_train: bool = True):
     """
     Splitting a percent of the train dataset to choose hyperparameters, taking the same percentage for each class.
+
     If `shuffle` is False, taking the first elements of each class as the validaton set.
     """
     assert 0 < split_percentage < 1
@@ -189,9 +187,8 @@ def create_train_dataset_dict(
     few_shot_n_tries: int = 1,
 ) -> dict[int, dict[int, Any]]:
     """
-    Randomly split a dataset for few-shot evaluation, with `few_shot_k_or_percent` being
-    n elements or x% of a class. Produces a dict, which keys are number of random "tries"
-    and values are the dataset subset for this "try".
+    Randomly split a dataset for few-shot evaluation, with `few_shot_k_or_percent` being n elements or x% of a class.
+    Produces a dict, which keys are number of random "tries" and values are the dataset subset for this "try".
 
     Format is {"nth-try": dataset}
     """
@@ -232,9 +229,7 @@ def create_train_dataset_dict(
 def extract_features_for_dataset_dict(
     model, dataset_dict: dict[int, dict[int, Any]], batch_size: int, num_workers: int, gather_on_cpu=False
 ) -> dict[int, dict[str, torch.Tensor]]:
-    """
-    Extract features for each subset of dataset in the context of few-shot evaluations
-    """
+    """Extract features for each subset of dataset in the context of few-shot evaluations."""
     few_shot_data_dict: dict[int, dict[str, torch.Tensor]] = {}
     for try_n, dataset in dataset_dict.items():
         features, labels = extract_features(model, dataset, batch_size, num_workers, gather_on_cpu=gather_on_cpu)
@@ -244,8 +239,9 @@ def extract_features_for_dataset_dict(
 
 def pad_multilabel_and_collate(batch, pad_value=-1):
     """
-    This method pads and collates a batch of (image, (index, target)) tuples, coming from
-    DatasetWithEnumeratedTargets, with targets that are list of potentially varying sizes.
+    This method pads and collates a batch of (image, (index, target)) tuples, coming from DatasetWithEnumeratedTargets,
+    with targets that are list of potentially varying sizes.
+
     The targets are padded to the length of the longest target list in the batch.
     """
     maxlen = max(len(targets) for _, (_, targets) in batch)
