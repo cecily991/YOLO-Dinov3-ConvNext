@@ -2,8 +2,10 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import torch
+
 from dinov3.eval.dense.depth.utils import cast_to
 
 from .dpt_head import DPTHead
@@ -19,7 +21,7 @@ class FeaturesToDepth(torch.nn.Module):
         norm_strategy="linear",
     ):
         """
-        Module which converts a feature maps into a depth map
+        Module which converts a feature maps into a depth map.
 
         Args:
         min_depth (float): minimum depth, used to calibrate the depth range
@@ -89,7 +91,6 @@ def make_head(
     head_type: str = "linear",
     **kwargs,
 ) -> torch.nn.Module:
-
     if isinstance(embed_dims, int):
         embed_dims = [embed_dims]
 

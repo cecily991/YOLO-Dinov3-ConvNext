@@ -2,15 +2,16 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 import os
 import random
 import socket
 import subprocess
+from collections.abc import Sequence
 from datetime import timedelta
 from enum import Enum
-from typing import List, Sequence
 
 import torch
 import torch.distributed as dist
@@ -101,7 +102,7 @@ def _get_available_port() -> int:
         return port
 
 
-def _parse_slurm_node_list(s: str) -> List[str]:
+def _parse_slurm_node_list(s: str) -> list[str]:
     return subprocess.check_output(["scontrol", "show", "hostnames", s], text=True).splitlines()
 
 
@@ -113,7 +114,8 @@ class JobType(Enum):
 
 class TorchDistributedEnvironment:
     """
-    Helper class to get (and set) distributed job information from the
+    Helper class to get (and set) distributed job information from the.
+
     environment. Identifies and supports (in this order):
     - TorchElastic,
     - Slurm,
@@ -167,7 +169,7 @@ class TorchDistributedEnvironment:
         *,
         overwrite: bool,
         nccl_async_error_handling: bool = False,
-    ) -> "TorchDistributedEnvironment":
+    ) -> TorchDistributedEnvironment:
         # See the "Environment variable initialization" section from
         # https://pytorch.org/docs/stable/distributed.html for the complete list of
         # environment variables required for the env:// initialization method.
@@ -206,18 +208,18 @@ class TorchDistributedEnvironment:
         return (
             f"{self.job_type.value} job "
             + (f"({self.job_id}) " if self.job_id else "")
-            + f"using {self.master_addr}:{self.master_port} "  # noqa: E231
+            + f"using {self.master_addr}:{self.master_port} "
             f"(rank={self.rank}, world size={self.world_size})"
         )
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
-            f"master_addr={self.master_addr},"  # noqa: E231
-            f"master_port={self.master_port},"  # noqa: E231
-            f"rank={self.rank},"  # noqa: E231
-            f"world_size={self.world_size},"  # noqa: E231
-            f"local_rank={self.local_rank},"  # noqa: E231
+            f"master_addr={self.master_addr},"
+            f"master_port={self.master_port},"
+            f"rank={self.rank},"
+            f"world_size={self.world_size},"
+            f"local_rank={self.local_rank},"
             f"local_world_size={self.local_world_size}"
             ")"
         )
@@ -231,7 +233,8 @@ def enable_distributed(
     restrict_print_to_main_process: bool = True,
     timeout: timedelta | None = None,
 ):
-    """Enable distributed mode.
+    """
+    Enable distributed mode.
 
     Args:
         set_cuda_current_device: If True, call torch.cuda.set_device() to set the
@@ -295,7 +298,8 @@ def disable_distributed() -> None:
 
 
 def new_subgroups(all_subgroup_ranks: Sequence[Sequence[int]]):
-    """Create new process subgroups according to the provided specification.
+    """
+    Create new process subgroups according to the provided specification.
 
     Args:
        all_subgroup_ranks: a sequence of rank sequences (first rank, ..., last rank),
@@ -338,7 +342,7 @@ def get_subgroup_rank() -> int:
 def get_subgroup_size() -> int:
     """
     Returns:
-        The number of processes in the process subgroup
+        The number of processes in the process subgroup.
     """
     return get_world_size(group=get_process_subgroup())
 

@@ -2,12 +2,13 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import csv
 import logging
 import os
 from enum import Enum
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Union
 
 import numpy as np
 
@@ -32,10 +33,10 @@ class _Split(Enum):
         }
         return split_lengths[self]
 
-    def get_dirname(self, class_id: Optional[str] = None) -> str:
+    def get_dirname(self, class_id: str | None = None) -> str:
         return self.value if class_id is None else os.path.join(self.value, class_id)
 
-    def get_image_relpath(self, actual_index: int, class_id: Optional[str] = None) -> str:
+    def get_image_relpath(self, actual_index: int, class_id: str | None = None) -> str:
         dirname = self.get_dirname(class_id)
         if self == _Split.TRAIN:
             basename = f"{class_id}_{actual_index}"
@@ -43,7 +44,7 @@ class _Split(Enum):
             basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
         return os.path.join(dirname, basename + ".JPEG")
 
-    def parse_image_relpath(self, image_relpath: str) -> Tuple[str, int]:
+    def parse_image_relpath(self, image_relpath: str) -> tuple[str, int]:
         assert self != _Split.TEST
         dirname, filename = os.path.split(image_relpath)
         class_id = os.path.split(dirname)[-1]
@@ -59,12 +60,12 @@ class ImageNet(ExtendedVisionDataset):
     def __init__(
         self,
         *,
-        split: "ImageNet.Split",
+        split: ImageNet.Split,
         root: str,
         extra: str,
-        transforms: Optional[Callable] = None,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
+        transforms: Callable | None = None,
+        transform: Callable | None = None,
+        target_transform: Callable | None = None,
     ) -> None:
         super().__init__(
             root=root,
@@ -82,7 +83,7 @@ class ImageNet(ExtendedVisionDataset):
         self._class_names = None
 
     @property
-    def split(self) -> "ImageNet.Split":
+    def split(self) -> ImageNet.Split:
         return self._split
 
     def _get_extra_full_path(self, extra_path: str) -> str:
@@ -151,21 +152,21 @@ class ImageNet(ExtendedVisionDataset):
             image_data = f.read()
         return image_data
 
-    def get_target(self, index: int) -> Optional[Target]:
+    def get_target(self, index: int) -> Target | None:
         entries = self._get_entries()
         class_index = entries[index]["class_index"]
         return None if self.split == _Split.TEST else int(class_index)
 
-    def get_targets(self) -> Optional[np.ndarray]:
+    def get_targets(self) -> np.ndarray | None:
         entries = self._get_entries()
         return None if self.split == _Split.TEST else entries["class_index"]
 
-    def get_class_id(self, index: int) -> Optional[str]:
+    def get_class_id(self, index: int) -> str | None:
         entries = self._get_entries()
         class_id = entries[index]["class_id"]
         return None if self.split == _Split.TEST else str(class_id)
 
-    def get_class_name(self, index: int) -> Optional[str]:
+    def get_class_name(self, index: int) -> str | None:
         entries = self._get_entries()
         class_name = entries[index]["class_name"]
         return None if self.split == _Split.TEST else str(class_name)
@@ -175,12 +176,12 @@ class ImageNet(ExtendedVisionDataset):
         assert len(entries) == self.split.length
         return len(entries)
 
-    def _load_labels(self, labels_path: str) -> List[Tuple[str, str]]:
+    def _load_labels(self, labels_path: str) -> list[tuple[str, str]]:
         labels_full_path = os.path.join(self.root, labels_path)
         labels = []
 
         try:
-            with open(labels_full_path, "r") as f:
+            with open(labels_full_path) as f:
                 reader = csv.reader(f)
                 for row in reader:
                     class_id, class_name = row
