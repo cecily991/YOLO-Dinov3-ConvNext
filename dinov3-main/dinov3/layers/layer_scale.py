@@ -2,8 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
-
-from typing import Union
+from __future__ import annotations
 
 import torch
 from torch import Tensor, nn
@@ -13,7 +12,7 @@ class LayerScale(nn.Module):
     def __init__(
         self,
         dim: int,
-        init_values: Union[float, Tensor] = 1e-5,
+        init_values: float | Tensor = 1e-5,
         inplace: bool = False,
         device=None,
     ) -> None:

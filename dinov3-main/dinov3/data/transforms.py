@@ -5,7 +5,7 @@
 
 import logging
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 import PIL
 import torch
@@ -19,9 +19,7 @@ def make_interpolation_mode(mode_str: str) -> transforms.InterpolationMode:
 
 
 class GaussianBlur(transforms.RandomApply):
-    """
-    Apply Gaussian Blur to the PIL image.
-    """
+    """Apply Gaussian Blur to the PIL image."""
 
     def __init__(self, *, p: float = 0.5, radius_min: float = 0.1, radius_max: float = 2.0):
         # NOTE: torchvision is applying 1 - probability to return the original image
@@ -31,14 +29,13 @@ class GaussianBlur(transforms.RandomApply):
 
 
 class MaybeToTensor(transforms.ToTensor):
-    """
-    Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor, or keep as is if already a tensor.
-    """
+    """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor, or keep as is if already a tensor."""
 
     def __call__(self, pic):
         """
         Args:
             pic (PIL Image, numpy.ndarray or torch.tensor): Image to be converted to tensor.
+
         Returns:
             Tensor: Converted image.
         """
@@ -93,7 +90,7 @@ def make_classification_train_transform(
     return transform
 
 
-class _MaxSizeResize(object):
+class _MaxSizeResize:
     def __init__(
         self,
         max_size: int,
@@ -188,7 +185,7 @@ def make_classification_eval_transform(
     )
 
 
-class MultipleResize(object):
+class MultipleResize:
     # A resize transform that makes the large side a multiple of a given number. That might change the aspect ratio.
     def __init__(self, interpolation=transforms.InterpolationMode.BILINEAR, multiple=1):
         self.multiple = multiple
@@ -200,9 +197,9 @@ class MultipleResize(object):
         if hasattr(img, "shape"):
             h, w = img.shape[-2:]
         else:
-            assert isinstance(
-                img, PIL.Image.Image
-            ), f"img should have a `shape` attribute or be a PIL Image, got {type(img)}"
+            assert isinstance(img, PIL.Image.Image), (
+                f"img should have a `shape` attribute or be a PIL Image, got {type(img)}"
+            )
             w, h = img.size
         new_h, new_w = [math.ceil(s / self.multiple) * self.multiple for s in (h, w)]
         resized_image = transforms.functional.resize(img, (new_h, new_w))

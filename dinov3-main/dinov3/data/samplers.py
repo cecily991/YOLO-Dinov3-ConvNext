@@ -2,10 +2,11 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import itertools
 import warnings
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -22,8 +23,8 @@ class EpochSampler(Sampler):
         sample_count: int,
         shuffle: bool = False,
         seed: int = 0,
-        start: Optional[int] = None,
-        step: Optional[int] = None,
+        start: int | None = None,
+        step: int | None = None,
     ):
         self._size = size
         self._sample_count = sample_count
@@ -82,8 +83,8 @@ class InfiniteSampler(Sampler):
         sample_count: int,
         shuffle: bool = False,
         seed: int = 0,
-        start: Optional[int] = None,
-        step: Optional[int] = None,
+        start: int | None = None,
+        step: int | None = None,
         advance: int = 0,
     ):
         self._sample_count = sample_count
@@ -169,8 +170,8 @@ class ShardedInfiniteSampler(Sampler):
         sample_count: int,
         shuffle: bool = False,
         seed: int = 0,
-        start: Optional[int] = None,
-        step: Optional[int] = None,
+        start: int | None = None,
+        step: int | None = None,
         advance: int = 0,
         use_new_shuffle_tensor_slice: bool = False,
     ):

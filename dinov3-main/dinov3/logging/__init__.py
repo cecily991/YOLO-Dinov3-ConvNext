@@ -2,6 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import functools
 import logging
@@ -12,7 +13,6 @@ from typing import Optional
 from termcolor import colored
 
 from dinov3.distributed import TorchDistributedEnvironment
-
 from dinov3.logging.helpers import MetricLogger, SmoothedValue
 
 _LEVEL_COLORED_KWARGS = {
@@ -47,12 +47,12 @@ class _LevelColoredFormatter(logging.Formatter):
 
 
 # So that calling _configure_logger multiple times won't add many handlers
-@functools.lru_cache()
+@functools.lru_cache
 def _configure_logger(
-    name: Optional[str] = None,
+    name: str | None = None,
     *,
     level: int = logging.DEBUG,
-    output: Optional[str] = None,
+    output: str | None = None,
     color: bool = True,
     log_to_stdout_only_in_main_process: bool = True,
 ):
@@ -74,7 +74,6 @@ def _configure_logger(
     Returns:
         The configured logger.
     """
-
     # Disable colored output if the stdout is not a terminal
     color = color and os.isatty(sys.stdout.fileno())
 
@@ -134,9 +133,9 @@ def _configure_logger(
 
 
 def setup_logging(
-    output: Optional[str] = None,
+    output: str | None = None,
     *,
-    name: Optional[str] = None,
+    name: str | None = None,
     level: int = logging.DEBUG,
     color: bool = True,
     capture_warnings: bool = True,
@@ -169,7 +168,7 @@ def setup_logging(
     )
 
 
-def cleanup_logging(*, name: Optional[str] = None) -> None:
+def cleanup_logging(*, name: str | None = None) -> None:
     logger = logging.getLogger(name)
     for handler in logger.handlers:
         handler.flush()

@@ -38,7 +38,7 @@ def ac_compile_parallelize_and_init(
     Order of the wrappers:
     1/ Activation checkpointing on blocks
     2/ Compile blocks
-    3/ FSDP blocks + global model
+    3/ FSDP blocks + global model.
     """
     logger.info("DISTRIBUTED FSDP -- preparing model for distributed training")
 
@@ -60,9 +60,7 @@ def ac_compile_parallelize_and_init(
         if use_activation_checkpointing:
             if use_full_activation_checkpointing:
                 _checkpointing_wrapper = checkpoint_wrapper
-                logger.info(
-                    "using selective checkpointing on backbone with full checkpointing policy"
-                )
+                logger.info("using selective checkpointing on backbone with full checkpointing policy")
             else:
                 _save_list = [
                     # mm
@@ -73,20 +71,14 @@ def ac_compile_parallelize_and_init(
                     torch.ops.aten._scaled_dot_product_flash_attention.default,
                     torch.ops._c10d_functional.reduce_scatter_tensor.default,
                 ]
-                with suppress(
-                    AttributeError
-                ):  # ignore exception if op is missing (old xFormers)
+                with suppress(AttributeError):  # ignore exception if op is missing (old xFormers)
                     _save_list.append(torch.ops.xformers_flash3.flash_fwd.default)
                 _checkpointing_wrapper = partial(
                     checkpoint_wrapper,
-                    context_fn=partial(
-                        create_selective_checkpoint_contexts, _save_list
-                    ),
+                    context_fn=partial(create_selective_checkpoint_contexts, _save_list),
                     preserve_rng_state=True,
                 )
-                logger.info(
-                    "using selective checkpointing on backbone with selective policy"
-                )
+                logger.info("using selective checkpointing on backbone with selective policy")
             for i, b in enumerate(model.blocks):
                 if not isinstance(b, nn.Identity):
                     model.blocks[i] = _checkpointing_wrapper(b)
@@ -95,9 +87,7 @@ def ac_compile_parallelize_and_init(
     def compile_block(block: nn.Module) -> nn.Module:
         if do_compile:
             if use_cuda_graphs:
-                block.compile(
-                    fullgraph=True, dynamic=False, options={"triton.cudagraphs": True}
-                )
+                block.compile(fullgraph=True, dynamic=False, options={"triton.cudagraphs": True})
             else:
                 block.compile()
         return block
@@ -140,13 +130,9 @@ def ac_compile_parallelize_and_init(
         **fsdp_config,
         reshard_after_forward=True,
     )
-    fully_shard(
-        clip_model.visual_model.backbone, **fsdp_config, reshard_after_forward=True
-    )
+    fully_shard(clip_model.visual_model.backbone, **fsdp_config, reshard_after_forward=True)
     fully_shard(clip_model.visual_model.head, **fsdp_config, reshard_after_forward=True)
-    register_fsdp_forward_method(
-        clip_model.visual_model.backbone, "get_intermediate_layers"
-    )
+    register_fsdp_forward_method(clip_model.visual_model.backbone, "get_intermediate_layers")
     for block in clip_model.text_model.backbone.blocks:
         fully_shard(block, **fsdp_config, reshard_after_forward=True)
     for i in range(clip_model.text_model.head.num_blocks):
@@ -160,9 +146,7 @@ def ac_compile_parallelize_and_init(
         **fsdp_config,
         reshard_after_forward=True,
     )
-    fully_shard(
-        clip_model.text_model.backbone, **fsdp_config, reshard_after_forward=True
-    )
+    fully_shard(clip_model.text_model.backbone, **fsdp_config, reshard_after_forward=True)
     fully_shard(clip_model.text_model.head, **fsdp_config, reshard_after_forward=True)
 
     clip_model.to_empty(device="cuda")

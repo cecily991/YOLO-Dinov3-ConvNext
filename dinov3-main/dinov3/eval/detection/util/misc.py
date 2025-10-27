@@ -15,16 +15,16 @@
 # Modified from DETR (https://github.com/facebookresearch/detr)
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
-
 """
 Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.
 """
-import copy
-from typing import List, Optional
 
-import dinov3.distributed as distributed
+from __future__ import annotations
+
+import copy
+
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -33,6 +33,8 @@ import torch.nn.functional as F
 # needed due to empty tensor bug in pytorch and torchvision 0.5
 import torchvision
 from torch import Tensor
+
+import dinov3.distributed as distributed
 
 
 def reduce_dict(input_dict, average=True):
@@ -77,14 +79,14 @@ def _max_by_axis(the_list):
     return maxes
 
 
-def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
+def nested_tensor_from_tensor_list(tensor_list: list[Tensor]):
     # TODO make this more general
     if tensor_list[0].ndim == 3:
         # TODO make it support different-sized images
         max_size = _max_by_axis([list(img.shape) for img in tensor_list])
         # min_size = tuple(min(s) for s in zip(*[img.shape for img in tensor_list]))
-        batch_shape = [len(tensor_list)] + max_size
-        b, c, h, w = batch_shape
+        batch_shape = [len(tensor_list), *max_size]
+        b, _c, h, w = batch_shape
         dtype = tensor_list[0].dtype
         device = tensor_list[0].device
         tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
@@ -97,8 +99,8 @@ def nested_tensor_from_tensor_list(tensor_list: List[Tensor]):
     return NestedTensor(tensor, mask)
 
 
-class NestedTensor(object):
-    def __init__(self, tensors, mask: Optional[Tensor]):
+class NestedTensor:
+    def __init__(self, tensors, mask: Tensor | None):
         self.tensors = tensors
         self.mask = mask
 
@@ -129,7 +131,7 @@ class NestedTensor(object):
 
 @torch.no_grad()
 def accuracy(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
+    """Computes the precision@k for the specified values of k."""
     if target.numel() == 0:
         return [torch.zeros([], device=output.device)]
     maxk = max(topk)
@@ -150,8 +152,8 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     # type: (Tensor, Optional[List[int]], Optional[float], str, Optional[bool]) -> Tensor
     """
     Equivalent to nn.functional.interpolate, but with support for empty batch sizes.
-    This will eventually be supported natively by PyTorch, and this
-    class can go away.
+
+    This will eventually be supported natively by PyTorch, and this class can go away.
     """
     return torchvision.ops.misc.interpolate(input, size, scale_factor, mode, align_corners)
 
@@ -271,7 +273,7 @@ def _get_clones(module, N):
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Return an activation function given a string."""
     if activation == "relu":
         return F.relu
     if activation == "gelu":

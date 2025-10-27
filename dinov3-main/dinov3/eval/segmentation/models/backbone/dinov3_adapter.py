@@ -4,13 +4,12 @@
 # the terms of the DINOv3 License Agreement.
 
 import math
+from functools import partial
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-
-from functools import partial
 
 from dinov3.eval.segmentation.models.utils.ms_deform_attn import MSDeformAttn
 
@@ -30,7 +29,7 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob: float = 0.0):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
@@ -54,7 +53,7 @@ def get_reference_points(spatial_shapes, device):
 
 
 def deform_inputs(x, patch_size):
-    bs, c, h, w = x.shape
+    _bs, _c, h, w = x.shape
     spatial_shapes = torch.as_tensor(
         [(h // 8, w // 8), (h // 16, w // 16), (h // 32, w // 32)], dtype=torch.long, device=x.device
     )
@@ -320,7 +319,7 @@ class DINOv3_Adapter(nn.Module):
         use_extra_extractor=True,
         with_cp=True,
     ):
-        super(DINOv3_Adapter, self).__init__()
+        super().__init__()
         self.backbone = backbone
         # Important: we freeze the backbone
         self.backbone.requires_grad_(False)
@@ -417,7 +416,7 @@ class DINOv3_Adapter(nn.Module):
         # Code for matching with oss
         H_c, W_c = x.shape[2] // 16, x.shape[3] // 16
         H_toks, W_toks = x.shape[2] // self.patch_size, x.shape[3] // self.patch_size
-        bs, C, h, w = x.shape
+        bs, _C, _h, _w = x.shape
 
         with torch.autocast("cuda", torch.bfloat16):
             with torch.no_grad():
