@@ -5,19 +5,17 @@
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # Adapted from: https://github.com/facebookresearch/detr/blob/master/models/detr.py
+from __future__ import annotations
 
-from typing import Optional
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
 
 from dinov3.eval.segmentation.models.utils.position_encoding import PositionEmbeddingSine
 
 
 def c2_xavier_fill(module: nn.Module) -> None:
-    """
-    Initialize `module.weight` using the "XavierFill" implemented in Caffe2.
-    Also initializes `module.bias` to 0.
+    """Initialize `module.weight` using the "XavierFill" implemented in Caffe2. Also initializes `module.bias` to 0.
 
     Args:
         module (torch.nn.Module): module to initialize.
@@ -33,13 +31,10 @@ def c2_xavier_fill(module: nn.Module) -> None:
 
 
 class Conv2d(torch.nn.Conv2d):
-    """
-    A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features.
-    """
+    """A wrapper around :class:`torch.nn.Conv2d` to support empty inputs and more features."""
 
     def __init__(self, *args, **kwargs):
-        """
-        Extra keyword arguments supported in addition to those in `torch.nn.Conv2d`:
+        """Extra keyword arguments supported in addition to those in `torch.nn.Conv2d`:.
 
         Args:
             norm (nn.Module, optional): a normalization layer
@@ -81,15 +76,15 @@ class SelfAttentionLayer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def with_pos_embed(self, tensor, pos: Optional[Tensor]):
+    def with_pos_embed(self, tensor, pos: Tensor | None):
         return tensor if pos is None else tensor + pos
 
     def forward_post(
         self,
         tgt,
-        tgt_mask: Optional[Tensor] = None,
-        tgt_key_padding_mask: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        tgt_mask: Tensor | None = None,
+        tgt_key_padding_mask: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         q = k = self.with_pos_embed(tgt, query_pos)
         tgt2 = self.self_attn(q, k, value=tgt, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask)[0]
@@ -101,9 +96,9 @@ class SelfAttentionLayer(nn.Module):
     def forward_pre(
         self,
         tgt,
-        tgt_mask: Optional[Tensor] = None,
-        tgt_key_padding_mask: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        tgt_mask: Tensor | None = None,
+        tgt_key_padding_mask: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         tgt2 = self.norm(tgt)
         q = k = self.with_pos_embed(tgt2, query_pos)
@@ -115,9 +110,9 @@ class SelfAttentionLayer(nn.Module):
     def forward(
         self,
         tgt,
-        tgt_mask: Optional[Tensor] = None,
-        tgt_key_padding_mask: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        tgt_mask: Tensor | None = None,
+        tgt_key_padding_mask: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         if self.normalize_before:
             return self.forward_pre(tgt, tgt_mask, tgt_key_padding_mask, query_pos)
@@ -142,17 +137,17 @@ class CrossAttentionLayer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def with_pos_embed(self, tensor, pos: Optional[Tensor]):
+    def with_pos_embed(self, tensor, pos: Tensor | None):
         return tensor if pos is None else tensor + pos
 
     def forward_post(
         self,
         tgt,
         memory,
-        memory_mask: Optional[Tensor] = None,
-        memory_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        memory_mask: Tensor | None = None,
+        memory_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         tgt2 = self.multihead_attn(
             query=self.with_pos_embed(tgt, query_pos),
@@ -170,10 +165,10 @@ class CrossAttentionLayer(nn.Module):
         self,
         tgt,
         memory,
-        memory_mask: Optional[Tensor] = None,
-        memory_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        memory_mask: Tensor | None = None,
+        memory_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         tgt2 = self.norm(tgt)
         tgt2 = self.multihead_attn(
@@ -191,10 +186,10 @@ class CrossAttentionLayer(nn.Module):
         self,
         tgt,
         memory,
-        memory_mask: Optional[Tensor] = None,
-        memory_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
-        query_pos: Optional[Tensor] = None,
+        memory_mask: Tensor | None = None,
+        memory_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
+        query_pos: Tensor | None = None,
     ):
         if self.normalize_before:
             return self.forward_pre(tgt, memory, memory_mask, memory_key_padding_mask, pos, query_pos)
@@ -221,7 +216,7 @@ class FFNLayer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def with_pos_embed(self, tensor, pos: Optional[Tensor]):
+    def with_pos_embed(self, tensor, pos: Tensor | None):
         return tensor if pos is None else tensor + pos
 
     def forward_post(self, tgt):
@@ -243,7 +238,7 @@ class FFNLayer(nn.Module):
 
 
 def _get_activation_fn(activation):
-    """Return an activation function given a string"""
+    """Return an activation function given a string."""
     if activation == "relu":
         return F.relu
     if activation == "gelu":
@@ -254,13 +249,13 @@ def _get_activation_fn(activation):
 
 
 class MLP(nn.Module):
-    """Very simple multi-layer perceptron (also called FFN)"""
+    """Very simple multi-layer perceptron (also called FFN)."""
 
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
+        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim, *h], [*h, output_dim]))
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
@@ -284,8 +279,8 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
         mask_dim: int,
         enforce_input_project: bool,
     ):
-        """
-        NOTE: this interface is experimental.
+        """NOTE: this interface is experimental.
+
         Args:
             in_channels: channels of the input features
             mask_classification: whether to add mask classifier or not
@@ -298,8 +293,7 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
             dec_layers: number of Transformer decoder layers
             pre_norm: whether to use pre-LayerNorm or not
             mask_dim: mask feature dimension
-            enforce_input_project: add input project 1x1 conv even if input
-                channels and hidden dim is identical
+            enforce_input_project: add input project 1x1 conv even if input channels and hidden dim is identical.
         """
         super().__init__()
 

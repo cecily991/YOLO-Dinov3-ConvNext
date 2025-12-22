@@ -2,10 +2,10 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 from pathlib import Path
-
 from typing import Union
 
 import torch
@@ -89,7 +89,7 @@ def build_model_from_cfg(cfg, only_teacher: bool = False):
 
 def build_model_for_eval(
     config,
-    pretrained_weights: Union[str, Path] | None,
+    pretrained_weights: str | Path | None,
     shard_unsharded_model: bool = False,  # If the model is not sharded, shard it. No effect if already sharded on disk
 ):
     model, _ = build_model_from_cfg(config, only_teacher=True)
