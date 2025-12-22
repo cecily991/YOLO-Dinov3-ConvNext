@@ -193,7 +193,7 @@ image = load_image(url)
 
 feature_extractor = pipeline(
     model="facebook/dinov3-convnext-tiny-pretrain-lvd1689m",
-    task="image-feature-extraction", 
+    task="image-feature-extraction",
 )
 features = feature_extractor(image)
 ```
@@ -209,8 +209,8 @@ image = load_image(url)
 pretrained_model_name = "facebook/dinov3-convnext-tiny-pretrain-lvd1689m"
 processor = AutoImageProcessor.from_pretrained(pretrained_model_name)
 model = AutoModel.from_pretrained(
-    pretrained_model_name, 
-    device_map="auto", 
+    pretrained_model_name,
+    device_map="auto",
 )
 
 inputs = processor(images=image, return_tensors="pt").to(model.device)
@@ -240,7 +240,7 @@ where `model` and `pretrained_model_name` above can be one of:
 For models using the LVD-1689M weights (pretrained on web images), please use the following transform (standard ImageNet evaluation transform):
 
 ```python
-import torchvision
+
 
 def make_transform(resize_size: int = 224):
     to_tensor = transforms.ToTensor()
@@ -257,7 +257,7 @@ For models using the SAT-493M weights (pretrained on satellite imagery), please 
 
 
 ```python
-import torchvision
+
 
 def make_transform(resize_size: int = 224):
     to_tensor = transforms.ToTensor()
@@ -298,7 +298,6 @@ import torch
 
 # DINOv3
 dinov3_vit7b16_lc = torch.hub.load(REPO_DIR, 'dinov3_vit7b16_lc', source="local", weights=<DEPTHER/CHECKPOINT/URL/OR/PATH>, backbone_weights=<BACKBONE/CHECKPOINT/URL/OR/PATH>)
-
 ```
 
 ### Pretrained heads - Depther trained on SYNTHMIX dataset
@@ -369,7 +368,6 @@ plt.axis("off")
 plt.subplot(122)
 plt.imshow(depths[0,0].cpu(), cmap=colormaps["Spectral"])
 plt.axis("off")
-
 ```
 
 ### Pretrained heads - Detector trained on COCO2017 dataset

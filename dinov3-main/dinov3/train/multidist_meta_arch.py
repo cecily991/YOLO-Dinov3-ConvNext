@@ -2,6 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 
@@ -14,14 +15,10 @@ logger = logging.getLogger("dinov3")
 
 
 class MultiDistillationMetaArch(SSLMetaArch):
-    """
-    Multidistillation version of SSLMetaArchCompilableGram:
-    - baked-in scales for DINO, KOLEO, and IBOT losses
-    - always global and local crops
-    - always separate heads for DINO and IBOT
-    - always sinkhorn-knopp centering for DINO and IBOT
-    - always per-GPU computation of KOLEO loss (non-distributed)
-    - DINO, IBOT, and KOLEO are always computed even if their weight is 0.0
+    """Multidistillation version of SSLMetaArchCompilableGram: - baked-in scales for DINO, KOLEO, and IBOT losses -
+    always global and local crops - always separate heads for DINO and IBOT - always sinkhorn-knopp centering for
+    DINO and IBOT - always per-GPU computation of KOLEO loss (non-distributed) - DINO, IBOT, and KOLEO are always
+    computed even if their weight is 0.0.
     """
 
     def forward_backward(
@@ -106,14 +103,14 @@ class MultiDistillationMetaArch(SSLMetaArch):
         n_masked_patches_tensor,
         global_batch_size,
     ):
-        n_crops, B_teacher, rgb, H, W = images.shape
+        n_crops, _B_teacher, _rgb, _H, _W = images.shape
 
         backbone_out = self.teacher.backbone(images.flatten(0, 1), is_training=True)
         cls = backbone_out["x_norm_clstoken"]  # [n_crops * B, D]
         reg = backbone_out["x_storage_tokens"]  # [n_crops * B, R, D]
         ibot_patch = backbone_out["x_norm_patchtokens"]  # [n_crops * B, P, D]
 
-        R, D = reg.shape[-2:]
+        _R, _D = reg.shape[-2:]
 
         # Multidistillation codepath:
         # IBOT head only on patches that are masked for the student
