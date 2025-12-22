@@ -2,6 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 from dataclasses import dataclass
 
@@ -24,7 +25,7 @@ class DetectionHeadConfig:
     num_queries_one2many: int = 1500  # was 0, number of query slots for one_to_many matching
     """
     Absolute coordinates & box regression reparameterization.
-    If true, we use absolute coordindates & reparameterization for bounding boxes.
+    If true, we use absolute coordinates & reparameterization for bounding boxes.
     """
     reparam: bool = True
     topk: int = 100

@@ -5,6 +5,7 @@
 
 import torch
 
+
 def cast_to(o, dtype: torch.dtype):
     if isinstance(o, torch.Tensor):
         return o.to(dtype)
