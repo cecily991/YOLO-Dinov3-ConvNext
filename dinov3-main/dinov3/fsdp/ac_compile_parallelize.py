@@ -2,10 +2,11 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, List, Optional
+from typing import Any
 
 import torch
 import torch.distributed as dist
@@ -35,20 +36,16 @@ def map_modules_and_blocks(models: list[nn.ModuleDict], callable) -> None:
 
 def ac_compile_parallelize(
     trained_model: nn.ModuleDict,
-    inference_only_models: List[nn.ModuleDict],
+    inference_only_models: list[nn.ModuleDict],
     cfg: Any,
-    trained_model_process_group: Optional[dist.ProcessGroup] = None,
-    inference_only_models_process_groups: Optional[List[dist.ProcessGroup]] = None,
+    trained_model_process_group: dist.ProcessGroup | None = None,
+    inference_only_models_process_groups: list[dist.ProcessGroup] | None = None,
 ) -> None:
+    """Order of the wrappers: 1/ Activation checkpointing on blocks 2/ Compile blocks 3/ FSDP blocks + global model.
     """
-    Order of the wrappers:
-    1/ Activation checkpointing on blocks
-    2/ Compile blocks
-    3/ FSDP blocks + global model
-    """
-    assert (
-        isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model.keys()
-    ), f"{trained_model} does not contain a backbone?"
+    assert isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model.keys(), (
+        f"{trained_model} does not contain a backbone?"
+    )
     logger.info("DISTRIBUTED FSDP -- preparing model for distributed training")
     if utils.has_batchnorms(trained_model):
         raise NotImplementedError
@@ -81,15 +78,15 @@ def ac_compile_parallelize(
             backbone.blocks[i] = _checkpointing_wrapper(b)
 
     # 2/ Compile blocks
-    all_models = [trained_model] + inference_only_models
+    all_models = [trained_model, *inference_only_models]
     if trained_model_process_group is None and inference_only_models_process_groups is None:
         all_pgs = [None] * len(all_models)
     elif trained_model_process_group is None:
-        all_pgs = [None] + inference_only_models_process_groups
+        all_pgs = [None, *inference_only_models_process_groups]
     elif inference_only_models_process_groups is None:
         all_pgs = [trained_model_process_group] + [None] * len(inference_only_models_process_groups)
     else:
-        all_pgs = [trained_model_process_group] + inference_only_models_process_groups
+        all_pgs = [trained_model_process_group, *inference_only_models_process_groups]
 
     def wrap_compile_block(m: nn.Module, is_backbone_block: bool) -> nn.Module:
         if cfg.train.compile:

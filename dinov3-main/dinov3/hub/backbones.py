@@ -2,12 +2,12 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import os
 from enum import Enum
-from typing import List, Optional, Union
-from urllib.parse import urlparse
 from pathlib import Path
+from urllib.parse import urlparse
 
 import torch
 
@@ -46,9 +46,9 @@ def _make_dinov3_vit_model_url(
     *,
     patch_size: int = 16,
     compact_arch_name: str = "vitb",
-    version: Optional[str] = None,
-    weights: Union[Weights, str] = Weights.LVD1689M,
-    hash: Optional[str] = None,
+    version: str | None = None,
+    weights: Weights | str = Weights.LVD1689M,
+    hash: str | None = None,
 ):
     model_name = "dinov3"
     model_arch = _make_dinov3_vit_model_arch(patch_size=patch_size, compact_arch_name=compact_arch_name)
@@ -88,9 +88,9 @@ def _make_dinov3_vit(
     n_storage_tokens: int = 0,
     mask_k_bias: bool = False,
     pretrained: bool = True,
-    version: Optional[str] = None,
-    weights: Union[Weights, str] = Weights.LVD1689M,
-    hash: Optional[str] = None,
+    version: str | None = None,
+    weights: Weights | str = Weights.LVD1689M,
+    hash: str | None = None,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -147,8 +147,8 @@ def _make_dinov3_vit(
 def _make_dinov3_convnext_model_url(
     *,
     compact_arch_name: str = "convnext_base",
-    weights: Union[Weights, str] = Weights.LVD1689M,
-    hash: Optional[str] = None,
+    weights: Weights | str = Weights.LVD1689M,
+    hash: str | None = None,
 ):
     model_name = "dinov3"
     weights_name = weights.value.lower()
@@ -161,14 +161,14 @@ def _make_dinov3_convnext_model_url(
 
 def _make_dinov3_convnext(
     in_chans: int = 3,
-    depths: List[int] = [3, 3, 27, 3],
-    dims: List[int] = [128, 256, 512, 1024],
+    depths: list[int] = [3, 3, 27, 3],
+    dims: list[int] = [128, 256, 512, 1024],
     compact_arch_name: str = "convnext_base",
     drop_path_rate: float = 0.0,
     layer_scale_init_value: float = 1e-6,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
-    hash: Optional[str] = None,
+    weights: Weights | str = Weights.LVD1689M,
+    hash: str | None = None,
     **kwargs,
 ):
     from ..models.convnext import ConvNeXt
@@ -201,7 +201,7 @@ def _make_dinov3_convnext(
 def dinov3_vits16(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -240,7 +240,7 @@ def dinov3_vits16(
 def dinov3_vits16plus(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -279,7 +279,7 @@ def dinov3_vits16plus(
 def dinov3_vitb16(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -318,7 +318,7 @@ def dinov3_vitb16(
 def dinov3_vitl16(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -374,7 +374,7 @@ def dinov3_vitl16(
 def dinov3_vitl16plus(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -413,7 +413,7 @@ def dinov3_vitl16plus(
 def dinov3_vith16plus(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -452,7 +452,7 @@ def dinov3_vith16plus(
 def dinov3_vit7b16(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     check_hash: bool = False,
     **kwargs,
 ):
@@ -497,7 +497,7 @@ def dinov3_vit7b16(
 def dinov3_convnext_tiny(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     **kwargs,
 ):
     _hash_convnext = "21b726bb"
@@ -527,7 +527,7 @@ def dinov3_convnext_tiny(
 def dinov3_convnext_small(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     **kwargs,
 ):
     _hash_convnext = "296db49d"
@@ -557,7 +557,7 @@ def dinov3_convnext_small(
 def dinov3_convnext_base(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     **kwargs,
 ):
     _hash_convnext = "801f2ba9"
@@ -587,7 +587,7 @@ def dinov3_convnext_base(
 def dinov3_convnext_large(
     *,
     pretrained: bool = True,
-    weights: Union[Weights, str] = Weights.LVD1689M,
+    weights: Weights | str = Weights.LVD1689M,
     **kwargs,
 ):
     _hash_convnext = "61fa432d"

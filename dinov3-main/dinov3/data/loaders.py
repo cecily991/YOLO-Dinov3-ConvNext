@@ -2,10 +2,11 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, Callable, TypeVar
 
 import torch
 from torch.utils.data import Sampler
@@ -29,8 +30,8 @@ def _make_bool_str(b: bool) -> str:
 
 
 def _make_sample_transform(
-    image_transform: Optional[Callable] = None,
-    target_transform: Optional[Callable] = None,
+    image_transform: Callable | None = None,
+    target_transform: Callable | None = None,
 ):
     def transform(sample):
         image, target = sample
@@ -77,11 +78,10 @@ def _parse_dataset_str(dataset_str: str):
 def make_dataset(
     *,
     dataset_str: str,
-    transform: Optional[Callable] = None,
-    target_transform: Optional[Callable] = None,
+    transform: Callable | None = None,
+    target_transform: Callable | None = None,
 ):
-    """
-    Creates a dataset with the specified parameters.
+    """Creates a dataset with the specified parameters.
 
     Args:
         dataset_str: A dataset string description (e.g. ImageNet:split=TRAIN).
@@ -110,12 +110,12 @@ def make_dataset(
 def _make_sampler(
     *,
     dataset,
-    type: Optional[SamplerType] = None,
+    type: SamplerType | None = None,
     shuffle: bool = False,
     seed: int = 0,
     size: int = -1,
     advance: int = 0,
-) -> Optional[Sampler]:
+) -> Sampler | None:
     sample_count = len(dataset)
 
     if type == SamplerType.INFINITE:
@@ -179,15 +179,14 @@ def make_data_loader(
     num_workers: int,
     shuffle: bool = True,
     seed: int = 0,
-    sampler_type: Optional[SamplerType] = SamplerType.INFINITE,
+    sampler_type: SamplerType | None = SamplerType.INFINITE,
     sampler_size: int = -1,
     sampler_advance: int = 0,
     drop_last: bool = True,
     persistent_workers: bool = False,
-    collate_fn: Optional[Callable[[List[T]], Any]] = None,
+    collate_fn: Callable[[list[T]], Any] | None = None,
 ):
-    """
-    Creates a data loader with the specified parameters.
+    """Creates a data loader with the specified parameters.
 
     Args:
         dataset: A dataset (third party, LaViDa or WebDataset).
@@ -195,14 +194,14 @@ def make_data_loader(
         num_workers: The number of workers to use.
         shuffle: Whether to shuffle samples.
         seed: The random seed to use.
-        sampler_type: Which sampler to use: EPOCH, INFINITE, SHARDED_INFINITE, SHARDED_INFINITE_NEW, DISTRIBUTED or None.
+        sampler_type: Which sampler to use: EPOCH, INFINITE, SHARDED_INFINITE, SHARDED_INFINITE_NEW, DISTRIBUTED or
+            None.
         sampler_size: The number of images per epoch (when applicable) or -1 for the entire dataset.
         sampler_advance: How many samples to skip (when applicable).
         drop_last: Whether the last non-full batch of data should be dropped.
         persistent_workers: maintain the workers Dataset instances alive after a dataset has been consumed once.
         collate_fn: Function that performs batch collation
     """
-
     sampler = _make_sampler(
         dataset=dataset,
         type=sampler_type,

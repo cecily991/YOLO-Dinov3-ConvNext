@@ -2,6 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import os
 import warnings
@@ -11,7 +12,7 @@ from functools import lru_cache
 from gzip import GzipFile
 from io import BytesIO
 from mmap import ACCESS_READ, mmap
-from typing import Any, Callable, List, Optional, Set, Tuple
+from typing import Any, Callable
 
 import numpy as np
 
@@ -25,12 +26,12 @@ _DEFAULT_MMAP_CACHE_SIZE = 16  # Warning: This can exhaust file descriptors
 @dataclass
 class _ClassEntry:
     block_offset: int
-    maybe_filename: Optional[str] = None
+    maybe_filename: str | None = None
 
 
 @dataclass
 class _Entry:
-    class_index: int  # noqa: E701
+    class_index: int
     start_offset: int
     end_offset: int
     filename: str
@@ -67,7 +68,7 @@ def _make_mmap_tarball(tarballs_root: str, mmap_cache_size: int):
 
 
 class ImageNet22k(ExtendedVisionDataset):
-    _GZIPPED_INDICES: Set[int] = {
+    _GZIPPED_INDICES: set[int] = {
         841_545,
         1_304_131,
         2_437_921,
@@ -102,9 +103,9 @@ class ImageNet22k(ExtendedVisionDataset):
         *,
         root: str,
         extra: str,
-        transforms: Optional[Callable] = None,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
+        transforms: Callable | None = None,
+        transform: Callable | None = None,
+        target_transform: Callable | None = None,
         mmap_cache_size: int = _DEFAULT_MMAP_CACHE_SIZE,
     ) -> None:
         super().__init__(root, transforms, transform, target_transform)
@@ -119,13 +120,13 @@ class ImageNet22k(ExtendedVisionDataset):
         self._gzipped_indices = ImageNet22k._GZIPPED_INDICES
         self._mmap_tarball = _make_mmap_tarball(self._tarballs_root, mmap_cache_size)
 
-    def _get_entries_path(self, root: Optional[str] = None) -> str:
+    def _get_entries_path(self, root: str | None = None) -> str:
         return "entries.npy"
 
-    def _get_class_ids_path(self, root: Optional[str] = None) -> str:
+    def _get_class_ids_path(self, root: str | None = None) -> str:
         return "class-ids.npy"
 
-    def _find_class_ids(self, path: str) -> List[str]:
+    def _find_class_ids(self, path: str) -> list[str]:
         class_ids = []
 
         with os.scandir(path) as entries:
@@ -137,9 +138,9 @@ class ImageNet22k(ExtendedVisionDataset):
 
         return sorted(class_ids)
 
-    def _load_entries_class_ids(self, root: Optional[str] = None) -> Tuple[List[_Entry], List[str]]:
+    def _load_entries_class_ids(self, root: str | None = None) -> tuple[list[_Entry], list[str]]:
         root = self.get_root(root)
-        entries: List[_Entry] = []
+        entries: list[_Entry] = []
         class_ids = self._find_class_ids(root)
 
         for class_index, class_id in enumerate(class_ids):
@@ -157,7 +158,7 @@ class ImageNet22k(ExtendedVisionDataset):
                         maybe_filename = None
                         if filename != "** Block of NULs **":
                             maybe_filename = filename
-                            _, ext = os.path.splitext(filename)
+                            _, _ext = os.path.splitext(filename)
                             # assert ext == ".JPEG"
 
                         class_entry = _ClassEntry(block_offset, maybe_filename)
@@ -214,7 +215,7 @@ class ImageNet22k(ExtendedVisionDataset):
                 with GzipFile(fileobj=BytesIO(data)) as g:
                     data = g.read()
         except Exception as e:
-            raise RuntimeError(f"can not retrieve image data for sample {index} " f'from "{class_id}" tarball') from e
+            raise RuntimeError(f'can not retrieve image data for sample {index} from "{class_id}" tarball') from e
 
         return data
 
@@ -230,7 +231,7 @@ class ImageNet22k(ExtendedVisionDataset):
     def get_class_ids(self) -> np.ndarray:
         return self._entries["class_id"]
 
-    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+    def __getitem__(self, index: int) -> tuple[Any, Any]:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return super().__getitem__(index)
@@ -297,5 +298,5 @@ class ImageNet22k(ExtendedVisionDataset):
         self._dump_entries(*args, *kwargs)
         self._dump_class_ids(*args, *kwargs)
 
-    def dump_extra(self, root: Optional[str] = None) -> None:
+    def dump_extra(self, root: str | None = None) -> None:
         return self._dump_extra(root)

@@ -2,8 +2,9 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
-from typing import Callable, Optional, Tuple
+from typing import Callable
 
 import torch
 import torch.distributed as dist
@@ -50,34 +51,32 @@ def make_inference(
     decoder_head_type: str = "linear",
     rescale_to=(512, 512),
     n_output_channels: int = 256,
-    crop_size: Optional[Tuple[int]] = None,
-    stride: Optional[Tuple[int]] = None,
+    crop_size: tuple[int] | None = None,
+    stride: tuple[int] | None = None,
     apply_horizontal_flip: bool = False,
     num_max_forward: int = 1,
     output_activation: Callable | None = None,
 ):
-    """Make inference on a given image, and reverts horizontal flip TTA if applicable.
-    If `inference_mode` = whole, one single prediction is made for the image.
-    If `inference_mode` = slide, the image is cropped into multiple slices and the latter are
-    used to make prediction following a sliding window method.
+    """Make inference on a given image, and reverts horizontal flip TTA if applicable. If `inference_mode` = whole, one
+    single prediction is made for the image. If `inference_mode` = slide, the image is cropped into multiple slices
+    and the latter are used to make prediction following a sliding window method.
 
     Args:
         x (tensor): input image to make inference on.
-        dense_predictor (nn.Module): model to use for evaluating on dense tasks.
-            requires a `predict` method.
-        inference_mode (str, optional): Do inference on the whole image (mode="whole"), or by
-            adopting a sliding window approach to aggregate the results on
-            smaller patches of the input image (mode="slide"). Defaults to "whole".
-        rescale_to (tuple, optional): Resizing the output of the model prediction to the
-            shape of the ground truth. Defaults to (512, 512).
+        dense_predictor (nn.Module): model to use for evaluating on dense tasks. requires a `predict` method.
+        inference_mode (str, optional): Do inference on the whole image (mode="whole"), or by adopting a sliding window
+            approach to aggregate the results on smaller patches of the input image (mode="slide"). Defaults to "whole".
+        rescale_to (tuple, optional): Resizing the output of the model prediction to the shape of the ground truth.
+            Defaults to (512, 512).
         n_output_channels (int): number of output classes
         crop_size (tuple, optional): [h_crop, w_crop]
         stride (tuple, optional): [h_stride, w_stride]
-        apply_horizontal_flip (bool): Determines if horizontal flip TTA was applied for
-            the prediction. Defaults to False.
+        apply_horizontal_flip (bool): Determines if horizontal flip TTA was applied for the prediction. Defaults to
+            False.
         output_activation (callable): Output activation to use on top of the predictions.
             - softmax is used when each pixel belongs to a single class (multiclass),
             - sigmoid is used when pixel can belong to multiple classes (multilabel). Defaults to None (identity).
+
     Returns:
         Tensor: The segmentation results created from the input image.
     """
@@ -127,20 +126,20 @@ def slide_inference(
     segmentation_model: nn.Module,
     decoder_head_type: str = "linear",
     n_output_channels: int = 256,
-    crop_size: Tuple = (512, 512),
-    stride: Tuple = (341, 341),
+    crop_size: tuple = (512, 512),
+    stride: tuple = (341, 341),
     num_max_forward: int = 1,
 ):
-    """Inference by sliding-window with overlap.
-    If h_crop > h_img or w_crop > w_img, the small patch will be used to
+    """Inference by sliding-window with overlap. If h_crop > h_img or w_crop > w_img, the small patch will be used to
     decode without padding.
+
     Args:
-        inputs (tensor): the tensor should have a shape NxCxHxW,
-            which contains all images in the batch.
+        inputs (tensor): the tensor should have a shape NxCxHxW, which contains all images in the batch.
         segmentation_model (nn.Module): model to use for evaluating on dense tasks.
         n_output_channels (int): number of output channels
         crop_size (tuple): (h_crop, w_crop)
         stride (tuple): (h_stride, w_stride)
+
     Returns:
         Tensor: The output results from model of each input image.
     """
