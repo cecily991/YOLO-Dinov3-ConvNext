@@ -2,8 +2,10 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import torch
+
 from dinov3.eval.dense.depth.utils import cast_to
 
 from .dpt_head import DPTHead
@@ -18,19 +20,19 @@ class FeaturesToDepth(torch.nn.Module):
         bins_strategy="linear",
         norm_strategy="linear",
     ):
-        """
-        Module which converts a feature maps into a depth map
+        """Module which converts a feature maps into a depth map.
 
         Args:
-        min_depth (float): minimum depth, used to calibrate the depth range
-        max_depth (float): maximum depth, used to calibrate the depth range
-        bins_strategy (str): Choices are 'linear' or 'log', for Uniform or Scale Invariant distributions for depth bins.
-                             See AdaBins [1] for more details.
-        norm_strategy (str): Choices are 'linear', 'softmax' or 'sigmoid', for the conversion of features to depth logits
-        scale_up (bool): If true, and only if regression by classification is not used, the result is multiplied by max_depth
+            min_depth (float): minimum depth, used to calibrate the depth range
+            max_depth (float): maximum depth, used to calibrate the depth range
+            bins_strategy (str): Choices are 'linear' or 'log', for Uniform or Scale Invariant distributions for depth
+                bins. See AdaBins [1] for more details.
+            norm_strategy (str): Choices are 'linear', 'softmax' or 'sigmoid', for the conversion of features to depth
+                logits
+            scale_up (bool): If true, and only if regression by classification is not used, the result is multiplied by
+                max_depth
 
-
-        Example:
+        Examples:
         x = depth_model(input_image)  # N C H W
         - If pure regression (C == 1), depth is obtained by scaling and/or shifting x
         - If C > 1, bins are used:
