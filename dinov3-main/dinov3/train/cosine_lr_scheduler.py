@@ -2,6 +2,7 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import logging
 
@@ -10,7 +11,7 @@ import numpy as np
 logger = logging.getLogger("dinov3")
 
 
-class CosineScheduler(object):
+class CosineScheduler:
     def __init__(
         self,
         base_value,
@@ -25,7 +26,7 @@ class CosineScheduler(object):
         self.final_value = np.float64(final_value)
         self.total_iters = total_iters
 
-        freeze_schedule = np.zeros((freeze_iters))
+        freeze_schedule = np.zeros(freeze_iters)
 
         warmup_schedule = np.linspace(start_warmup_value, base_value, warmup_iters)
 
@@ -59,8 +60,7 @@ def linear_warmup_cosine_decay(
     total_iterations: int,
     cosine_iterations: int | None = None,
 ) -> np.ndarray:
-    """
-    Create a learning rate schedule with linear warmup, a cosine, and an optional constant part in the end.
+    """Create a learning rate schedule with linear warmup, a cosine, and an optional constant part in the end.
 
     Args:
         start (float): Initial learning rate.
@@ -68,8 +68,9 @@ def linear_warmup_cosine_decay(
         end (float): Final learning rate after cosine.
         warmup_iterations (int): Number of iterations for linear warmup.
         total_iterations (int): Total number of iterations for the schedule.
-        cosine_iterations (int | None): Number of iterations for cosine.
-            If None, cosine part will be over remaining iterations after warmup.
+        cosine_iterations (int | None): Number of iterations for cosine. If None, cosine part will be over remaining
+            iterations after warmup.
+
     Returns:
         np.ndarray: Learning rate schedule as a numpy array.
     """
