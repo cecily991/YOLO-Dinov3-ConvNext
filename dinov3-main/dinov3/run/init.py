@@ -2,20 +2,20 @@
 #
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
+from __future__ import annotations
 
 import contextlib
 from datetime import timedelta
-from typing import Optional
 
 from dinov3.configs import exit_job, setup_job
 
 
 @contextlib.contextmanager
 def job_context(
-    output_dir: Optional[str] = None,
+    output_dir: str | None = None,
     distributed_enabled: bool = True,
     logging_enabled: bool = True,
-    seed: Optional[int] = 0,
+    seed: int | None = 0,
     restrict_print_to_main_process: bool = True,
     distributed_timeout: timedelta | None = None,
 ):
