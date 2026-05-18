@@ -3,16 +3,19 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
 import sys
 import time
 from dataclasses import dataclass, field
 from functools import partial
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed
+from dinov3.eval.setup import ModelConfig, load_model_and_context
 from omegaconf import MISSING
 from torch import nn
 from torch.utils.data import TensorDataset
@@ -30,7 +33,6 @@ from dinov3.eval.data import (
 )
 from dinov3.eval.helpers import args_dict_to_dataclass, cli_parser, write_results
 from dinov3.eval.metrics import ClassificationMetricType, build_classification_metric
-from dinov3.eval.setup import ModelConfig, load_model_and_context
 from dinov3.eval.utils import average_metrics, evaluate, extract_features
 from dinov3.eval.utils import save_results as default_save_results_func
 from dinov3.run.init import job_context
@@ -65,7 +67,7 @@ _CPU_DEVICE = torch.device("cpu")
 @dataclass
 class TrainConfig:
     dataset: str = MISSING  # train dataset path
-    val_dataset: Optional[str] = None  # val dataset path. If None, choose hyperparameters on 10% of the train set.
+    val_dataset: str | None = None  # val dataset path. If None, choose hyperparameters on 10% of the train set.
     val_metric_type: ClassificationMetricType = ClassificationMetricType.MEAN_ACCURACY
     batch_size: int = 256  # batch size for train and val set feature extraction
     num_workers: int = 5  # number of workers for train and val set feature extraction
@@ -80,7 +82,7 @@ class EvalConfig:
     test_dataset: str = MISSING  # test dataset path
     batch_size: int | None = None  # use train.batch_size if None
     num_workers: int = 5
-    test_metric_type: Optional[ClassificationMetricType] = None
+    test_metric_type: ClassificationMetricType | None = None
 
 
 @dataclass
@@ -92,7 +94,7 @@ class TransformConfig:
 @dataclass
 class FewShotConfig:
     enable: bool = False  # whether to use few-shot evaluation
-    k_or_percent: Optional[float] = None  # number of elements or % to take per class
+    k_or_percent: float | None = None  # number of elements or % to take per class
     n_tries: int = 1  # number of tries for few-shot evaluation
 
 
@@ -174,7 +176,7 @@ def sweep_C_values(
 ):
     metric_tracker = MetricTracker(val_metric, maximize=True)
     ALL_C = 10**C_POWER_RANGE
-    logreg_models: Dict[float, Any] = {}
+    logreg_models: dict[float, Any] = {}
 
     train_features_device = torch.device(logreg_config.train_features_device)
     train_dtype = as_torch_dtype(logreg_config.train_dtype)
@@ -195,7 +197,7 @@ def sweep_C_values(
             logreg_config=logreg_config,
         )
 
-    gather_list: List[Dict[float, Any]] = [{} for _ in range(get_world_size())]
+    gather_list: list[dict[float, Any]] = [{} for _ in range(get_world_size())]
     torch.distributed.all_gather_object(gather_list, logreg_models)
 
     for logreg_dict in gather_list:
@@ -317,13 +319,10 @@ def make_test_dataset_and_data_loader(model, config: EvalConfig, transform, gath
 
 
 def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, config: LogregEvalConfig):
-    """
-    Implements the "standard" process for log regression evaluation:
-    The value of C is chosen by training on train_dataset and evaluating on
-    val_dataset. Then, the final model is trained on a concatenation of
-    train_dataset and val_dataset, and is evaluated on test_dataset.
-    If there is no val_dataset, the value of C is the one that yields
-    the best results on a random 10% subset of the train dataset
+    """Implements the "standard" process for log regression evaluation: The value of C is chosen by training on
+    train_dataset and evaluating on val_dataset. Then, the final model is trained on a concatenation of
+    train_dataset and val_dataset, and is evaluated on test_dataset. If there is no val_dataset, the value of C is
+    the one that yields the best results on a random 10% subset of the train dataset.
     """
     start = time.time()
     cudnn.benchmark = True
@@ -399,7 +398,7 @@ def eval_log_regression_with_model(*, model: torch.nn.Module, autocast_dtype, co
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=LogregEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_log_regression_with_model(
