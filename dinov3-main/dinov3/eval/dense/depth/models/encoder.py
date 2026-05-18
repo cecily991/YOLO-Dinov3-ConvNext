@@ -3,12 +3,15 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
+from collections.abc import Sequence
 from enum import Enum
-from typing import Sequence, Union
+
+from torch import Tensor, nn
 
 from dinov3.eval.dense.depth.models.embed import CenterPadding, StretchToMultiple
-from torch import Tensor, nn
 
 logger = logging.getLogger("fairvit")
 
@@ -22,18 +25,14 @@ class BackboneLayersSet(Enum):
 
 def _get_backbone_out_indices(
     model: nn.Module,
-    backbone_out_layers: Union[list[int], BackboneLayersSet] = BackboneLayersSet.FOUR_EVEN_INTERVALS,
+    backbone_out_layers: list[int] | BackboneLayersSet = BackboneLayersSet.FOUR_EVEN_INTERVALS,
 ):
-    """
-    Get indices for output layers of the ViT backbone. For now there are 3 options available:
-    BackboneLayersSet.LAST : only extract the last layer, used in segmentation tasks with a bn head.
-    BackboneLayersSet.FOUR_LAST : extract the last 4 layers, used in segmentation (multiscale setting)
-    BackboneLayersSet.FOUR_EVEN_INTERVALS : extract outputs every 1/4 of the total number of blocks
-    Reference outputs in 'FOUR_EVEN_INTERVALS' mode :
-    ViT/S (12 blocks): [2, 5, 8, 11]
-    ViT/B (12 blocks): [2, 5, 8, 11]
-    ViT/L (24 blocks): [5, 11, 17, 23] (correct), [4, 11, 17, 23] (incorrect)
-    ViT/g (40 blocks): [9, 19, 29, 39]
+    """Get indices for output layers of the ViT backbone. For now there are 3 options available: BackboneLayersSet.LAST
+    : only extract the last layer, used in segmentation tasks with a bn head. BackboneLayersSet.FOUR_LAST : extract
+    the last 4 layers, used in segmentation (multiscale setting) BackboneLayersSet.FOUR_EVEN_INTERVALS : extract
+    outputs every 1/4 of the total number of blocks Reference outputs in 'FOUR_EVEN_INTERVALS' mode : ViT/S (12
+    blocks): [2, 5, 8, 11] ViT/B (12 blocks): [2, 5, 8, 11] ViT/L (24 blocks): [5, 11, 17, 23] (correct), [4, 11,
+    17, 23] (incorrect) ViT/g (40 blocks): [9, 19, 29, 39].
     """
     n_blocks = getattr(model, "n_blocks", 1)
     if isinstance(backbone_out_layers, list):
@@ -65,7 +64,7 @@ class DinoVisionTransformerWrapper(nn.Module):
     def __init__(
         self,
         backbone_model: nn.Module,
-        backbone_out_layers: Union[str, list[int]],
+        backbone_out_layers: str | list[int],
         use_backbone_norm: bool = False,
         adapt_to_patch_size: PatchSizeAdaptationStrategy = PatchSizeAdaptationStrategy.CENTER_PADDING,
     ):
