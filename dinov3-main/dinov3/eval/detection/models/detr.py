@@ -16,9 +16,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
 
-"""
-Deformable DETR model and criterion classes.
-"""
+"""Deformable DETR model and criterion classes."""
+
 import math
 
 import torch
@@ -32,7 +31,7 @@ from .transformer import build_transformer
 
 
 class PlainDETR(nn.Module):
-    """This is the Deformable DETR module that performs object detection"""
+    """This is the Deformable DETR module that performs object detection."""
 
     def __init__(
         self,
@@ -48,6 +47,7 @@ class PlainDETR(nn.Module):
         mixed_selection=False,
     ):
         """Initializes the model.
+
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
             transformer: torch module of the transformer architecture. See transformer.py
@@ -57,8 +57,7 @@ class PlainDETR(nn.Module):
             two_stage: two-stage Deformable DETR
             num_queries_one2one: number of object queries for one-to-one matching part
             num_queries_one2many: number of object queries for one-to-many matching part
-            mixed_selection: a trick for Deformable DETR two stage
-
+            mixed_selection: a trick for Deformable DETR two stage.
         """
         super().__init__()
         num_queries = num_queries_one2one + num_queries_one2many
@@ -117,9 +116,8 @@ class PlainDETR(nn.Module):
         self.mixed_selection = mixed_selection
 
     def forward(self, samples: NestedTensor):
-        """The forward expects a NestedTensor, which consists of:
-           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+        """The forward expects a NestedTensor, which consists of: - samples.tensor: batched images, of shape [batch_size
+        x 3 x H x W] - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels.
 
         It returns a dict with the following elements:
            - "pred_logits": the classification logits (including no-object) for all queries.
@@ -128,8 +126,8 @@ class PlainDETR(nn.Module):
                            (center_x, center_y, height, width). These values are normalized in [0, 1],
                            relative to the size of each individual image (disregarding possible padding).
                            See PostProcess for information on how to retrieve the unnormalized bounding box.
-           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
-                            dictionnaries containing the two above keys for each decoder layer.
+           - "aux_outputs": Optional, only returned when auxiliary losses are activated. It is a list of
+                            dictionaries containing the two above keys for each decoder layer.
         """
         if not isinstance(samples, NestedTensor):
             samples = nested_tensor_from_tensor_list(samples)
@@ -173,9 +171,9 @@ class PlainDETR(nn.Module):
             inter_references,
             enc_outputs_class,
             enc_outputs_coord_unact,
-            enc_outputs_delta,
-            output_proposals,
-            max_shape,
+            _enc_outputs_delta,
+            _output_proposals,
+            _max_shape,
         ) = self.transformer(srcs, masks, pos, query_embeds, self_attn_mask)
 
         outputs_classes_one2one = []
@@ -237,9 +235,8 @@ class PlainDETR(nn.Module):
 
 class PlainDETRReParam(PlainDETR):
     def forward(self, samples: NestedTensor):
-        """The forward expects a NestedTensor, which consists of:
-           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+        """The forward expects a NestedTensor, which consists of: - samples.tensor: batched images, of shape [batch_size
+        x 3 x H x W] - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels.
 
         It returns a dict with the following elements:
            - "pred_logits": the classification logits (including no-object) for all queries.
@@ -248,8 +245,8 @@ class PlainDETRReParam(PlainDETR):
                            (center_x, center_y, height, width). These values are normalized in [0, 1],
                            relative to the size of each individual image (disregarding possible padding).
                            See PostProcess for information on how to retrieve the unnormalized bounding box.
-           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
-                            dictionnaries containing the two above keys for each decoder layer.
+           - "aux_outputs": Optional, only returned when auxiliary losses are activated. It is a list of
+                            dictionaries containing the two above keys for each decoder layer.
         """
         if not isinstance(samples, NestedTensor):
             samples = nested_tensor_from_tensor_list(samples)
@@ -382,7 +379,7 @@ class PlainDETRReParam(PlainDETR):
 
 
 class PostProcess(nn.Module):
-    """This module converts the model's output into the format expected by the coco api"""
+    """This module converts the model's output into the format expected by the coco api."""
 
     def __init__(self, topk=100, reparam=False):
         super().__init__()
@@ -391,12 +388,10 @@ class PostProcess(nn.Module):
 
     @torch.no_grad()
     def forward(self, outputs, target_sizes, original_target_sizes=None):
-        """Perform the computation
-        Parameters:
-            outputs: raw outputs of the model
-            target_sizes: tensor of dimension [batch_size x 2] containing the size of each images of the batch
-                          For evaluation, this must be the original image size (before any data augmentation)
-                          For visualization, this should be the image size after data augment, but before padding
+        """Perform the computation Parameters: outputs: raw outputs of the model target_sizes: tensor of dimension
+        [batch_size x 2] containing the size of each images of the batch For evaluation, this must be the
+        original image size (before any data augmentation) For visualization, this should be the image size
+        after data augment, but before padding.
         """
         out_logits, out_bbox = outputs["pred_logits"], outputs["pred_boxes"]
 
@@ -430,13 +425,13 @@ class PostProcess(nn.Module):
 
 
 class MLP(nn.Module):
-    """Very simple multi-layer perceptron (also called FFN)"""
+    """Very simple multi-layer perceptron (also called FFN)."""
 
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
+        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim, *h], [*h, output_dim]))
 
     def forward(self, x):
         for i, layer in enumerate(self.layers):
