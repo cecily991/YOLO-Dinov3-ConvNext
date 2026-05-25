@@ -5,7 +5,7 @@
 MODEL:
   META_ARCHITECTURE: SSLMetaArch
   DEVICE: cuda
-  WEIGHTS: ''
+  WEIGHTS: ""
   DTYPE: float32
 compute_precision:
   param_dtype: bf16
@@ -28,8 +28,8 @@ ibot:
   loss_weight: 1.0
   mask_sample_probability: 0.5
   mask_ratio_min_max:
-  - 0.1
-  - 0.5
+    - 0.1
+    - 0.5
   mask_random_circular_shift: false
   force_masking_even_with_zero_weight: false
   separate_head: true
@@ -63,10 +63,10 @@ student:
   drop_path_rate: 0.3
   layerscale: 1.0e-05
   patch_drop: 0.0
-  pretrained_weights: ''
+  pretrained_weights: ""
   ffn_layer: mlp
   ffn_ratio: 4.0
-  resume_from_teacher_chkpt: ''
+  resume_from_teacher_chkpt: ""
   qkv_bias: true
   proj_bias: true
   ffn_bias: true
@@ -78,13 +78,13 @@ student:
   pos_embed_rope_base: 100.0
   pos_embed_rope_min_period: null
   pos_embed_rope_max_period: null
-  pos_embed_rope_normalize_coords: separate  # min, max, separate
+  pos_embed_rope_normalize_coords: separate # min, max, separate
   pos_embed_rope_shift_coords: null
   pos_embed_rope_jitter_coords: null
   pos_embed_rope_rescale_coords: null
   pos_embed_rope_dtype: bf16
-  fp8_enabled: False  # Convert Linear layers to operate in fp8 precision
-  fp8_filter: "blocks"  # Regex that must appear in module path; empty means everything
+  fp8_enabled: False # Convert Linear layers to operate in fp8 precision
+  fp8_filter: "blocks" # Regex that must appear in module path; empty means everything
 teacher:
   momentum_teacher: 0.992
   final_momentum_teacher: 1
@@ -94,13 +94,13 @@ teacher:
   in_chans: 3
 distillation:
   enabled: false
-  full_cfg_path: ''
-  checkpoint_path: ''
+  full_cfg_path: ""
+  checkpoint_path: ""
 multidistillation:
   enabled: false
 hrft:
   enabled: false
-  checkpoint_path: ''
+  checkpoint_path: ""
 optim:
   epochs: 100
   optimizer: adamw
@@ -116,17 +116,17 @@ optim:
   dino_head_wd_multiplier: 1.0
   layerwise_decay: 0.9
   multi_tensor_optim: true
-  dump_fsdp_weights_path: ''
+  dump_fsdp_weights_path: ""
   adamw_beta1: 0.9
   adamw_beta2: 0.999
 crops:
   global_crops_scale:
-  - 0.32
-  - 1.0
+    - 0.32
+    - 1.0
   local_crops_number: 8
   local_crops_scale:
-  - 0.05
-  - 0.32
+    - 0.05
+    - 0.32
   global_crops_size: 224
   local_crops_size: 96
   localcrops_subset_of_globalcrops: false
