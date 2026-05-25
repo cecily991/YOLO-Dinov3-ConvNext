@@ -3,19 +3,21 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import os
 from enum import Enum
-from typing import Optional
 
 import torch
 import torch.nn as nn
 
 from .backbones import (
-    dinov3_vit7b16,
     Weights as BackboneWeights,
-    convert_path_or_url_to_url,
 )
-
+from .backbones import (
+    convert_path_or_url_to_url,
+    dinov3_vit7b16,
+)
 from .utils import DINOV3_BASE_URL
 
 
@@ -101,8 +103,8 @@ def dinov3_vit7b16_lc(
     check_hash: bool = False,
     **kwargs,
 ):
-    """
-    Linear classifier  on top of a DINOv3 ViT-7B/16 backbone pretrained on the LVD-1689M dataset and trained on ImageNet-1k.
+    """Linear classifier on top of a DINOv3 ViT-7B/16 backbone pretrained on the LVD-1689M dataset and trained on
+    ImageNet-1k.
     """
     return _make_dinov3_linear_classifier(
         backbone_name="dinov3_vit7b16",
