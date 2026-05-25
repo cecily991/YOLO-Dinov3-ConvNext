@@ -1,19 +1,17 @@
 # custom_modules/dinov3_backbone.py
 # 最终重构版: 直接调用官方 get_intermediate_layers API
 
+import os
+
 import torch
 import torch.nn as nn
-from typing import List
-import os
 
 
 class DINOv3ConvNextBackbone(nn.Module):
-    """
-    用于YOLO的DINOv3 ConvNeXt骨干网络封装类。
-    (最终重构版: 直接调用官方 get_intermediate_layers API)
+    """用于YOLO的DINOv3 ConvNeXt骨干网络封装类。 (最终重构版: 直接调用官方 get_intermediate_layers API).
     """
 
-    def __init__(self, repo_path: str, weight_path: str, size: str = 'tiny', freeze: bool = False):
+    def __init__(self, repo_path: str, weight_path: str, size: str = "tiny", freeze: bool = False):
         super().__init__()
 
         if not os.path.isdir(repo_path):
@@ -23,10 +21,7 @@ class DINOv3ConvNextBackbone(nn.Module):
 
         # 加载完整的DINOv3模型并将其保存为类的一个属性
         self.model = torch.hub.load(
-            repo_or_dir=repo_path,
-            model=f'dinov3_convnext_{size}',
-            source='local',
-            weights=weight_path
+            repo_or_dir=repo_path, model=f"dinov3_convnext_{size}", source="local", weights=weight_path
         )
 
         # 确定输出通道数
@@ -39,10 +34,8 @@ class DINOv3ConvNextBackbone(nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
-        """
-        通过调用官方的 get_intermediate_layers API 来执行前向传播。
-        """
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """通过调用官方的 get_intermediate_layers API 来执行前向传播。."""
         # 直接调用官方函数提取 P3, P4, P5 特征
         # n=[1, 2, 3] -> 提取 stage 1, 2, 3 的输出
         # reshape=True -> 确保输出是 [B, C, H, W] 的二维特征图格式
@@ -57,15 +50,11 @@ class DINOv3ConvNextBackbone(nn.Module):
 
 
 # --- 测试代码保持不变，用于验证重构后的类是否依然工作正常 ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     DINOV3_REPO_PATH = "../dinov3-main"
     LOCAL_WEIGHT_PATH = "../dinov3-main/checkpoints/dinov3_convnext_tiny.pth"
 
-    backbone = DINOv3ConvNextBackbone(
-        repo_path=DINOV3_REPO_PATH,
-        weight_path=LOCAL_WEIGHT_PATH,
-        size='tiny'
-    )
+    backbone = DINOv3ConvNextBackbone(repo_path=DINOV3_REPO_PATH, weight_path=LOCAL_WEIGHT_PATH, size="tiny")
     backbone.eval()
 
     dummy_input = torch.randn(1, 3, 640, 640)
