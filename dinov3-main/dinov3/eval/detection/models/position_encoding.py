@@ -16,9 +16,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
 
-"""
-Various positional encodings for the transformer.
-"""
+"""Various positional encodings for the transformer."""
+
 import math
 from enum import Enum
 
@@ -35,9 +34,8 @@ class PositionEncoding(Enum):
 
 
 class PositionEmbeddingSine(nn.Module):
-    """
-    This is a more standard version of the position embedding, very similar to the one
-    used by the Attention is all you need paper, generalized to work on images.
+    """This is a more standard version of the position embedding, very similar to the one used by the Attention is all
+    you need paper, generalized to work on images.
     """
 
     def __init__(self, num_pos_feats=64, temperature=10000, normalize=False, scale=None):
@@ -78,9 +76,7 @@ class PositionEmbeddingSine(nn.Module):
 
 
 class PositionEmbeddingLearned(nn.Module):
-    """
-    Absolute pos embedding, learned.
-    """
+    """Absolute pos embedding, learned."""
 
     def __init__(self, num_pos_feats=256):
         super().__init__()
