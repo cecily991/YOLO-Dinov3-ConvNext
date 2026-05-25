@@ -3,16 +3,17 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
+from collections.abc import Sequence
 from functools import partial
-from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn.init
 from torch import Tensor, nn
-
 
 logger = logging.getLogger("dinov3")
 
@@ -29,10 +30,10 @@ def drop_path(x: Tensor, drop_prob: float = 0.0, training: bool = False) -> Tens
 
 
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
+    """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None) -> None:
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x: Tensor) -> Tensor:
@@ -40,17 +41,15 @@ class DropPath(nn.Module):
 
 
 class Block(nn.Module):
-    r"""ConvNeXt Block. There are two equivalent implementations:
-    (1) DwConv -> LayerNorm (channels_first) -> 1x1 Conv -> GELU -> 1x1 Conv; all in (N, C, H, W)
-    (2) DwConv -> Permute to (N, H, W, C); LayerNorm (channels_last) -> Linear -> GELU -> Linear; Permute back
-    We use (2) as we find it slightly faster in PyTorch
+    r"""ConvNeXt Block. There are two equivalent implementations: (1) DwConv -> LayerNorm (channels_first) -> 1x1 Conv
+    -> GELU -> 1x1 Conv; all in (N, C, H, W) (2) DwConv -> Permute to (N, H, W, C); LayerNorm (channels_last) ->
+    Linear -> GELU -> Linear; Permute back We use (2) as we find it slightly faster in PyTorch.
 
     Args:
         dim (int): Number of input channels.
         drop_path (float): Stochastic depth rate. Default: 0.0
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
-
-    Source: https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.py
+        Source: https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.py
     """
 
     def __init__(self, dim, drop_path=0.0, layer_scale_init_value=1e-6):
@@ -61,7 +60,7 @@ class Block(nn.Module):
         self.act = nn.GELU()
         self.pwconv2 = nn.Linear(4 * dim, dim)
         self.gamma = (
-            nn.Parameter(layer_scale_init_value * torch.ones((dim)), requires_grad=True)
+            nn.Parameter(layer_scale_init_value * torch.ones(dim), requires_grad=True)
             if layer_scale_init_value > 0
             else None
         )
@@ -84,10 +83,9 @@ class Block(nn.Module):
 
 
 class LayerNorm(nn.Module):
-    r"""LayerNorm that supports two data formats: channels_last (default) or channels_first.
-    The ordering of the dimensions in the inputs. channels_last corresponds to inputs with
-    shape (batch_size, height, width, channels) while channels_first corresponds to inputs
-    with shape (batch_size, channels, height, width).
+    r"""LayerNorm that supports two data formats: channels_last (default) or channels_first. The ordering of the
+    dimensions in the inputs. channels_last corresponds to inputs with shape (batch_size, height, width, channels)
+    while channels_first corresponds to inputs with shape (batch_size, channels, height, width).
 
     Source: https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.py
     """
@@ -114,10 +112,9 @@ class LayerNorm(nn.Module):
 
 
 class ConvNeXt(nn.Module):
-    r"""
-    Code adapted from https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.pyConvNeXt
+    r"""Code adapted from https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.pyConvNeXt.
 
-    A PyTorch impl of : `A ConvNet for the 2020s`  -
+    A PyTorch impl of : `A ConvNet for the 2020s` -
         https://arxiv.org/pdf/2201.03545.pdf
 
     Args:
@@ -127,15 +124,16 @@ class ConvNeXt(nn.Module):
         dims (int): Feature dimension at each stage. Default: [96, 192, 384, 768]
         drop_path_rate (float): Stochastic depth rate. Default: 0.
         layer_scale_init_value (float): Init value for Layer Scale. Default: 1e-6.
-        patch_size (int | None): Pseudo patch size. Used to resize feature maps to those of a ViT with a given patch size. If None, no resizing is performed
+        patch_size (int | None): Pseudo patch size. Used to resize feature maps to those of a ViT with a given patch
+            size. If None, no resizing is performed
     """
 
     def __init__(
         self,
         # original ConvNeXt arguments
         in_chans: int = 3,
-        depths: List[int] = [3, 3, 9, 3],
-        dims: List[int] = [96, 192, 384, 768],
+        depths: list[int] = [3, 3, 9, 3],
+        dims: list[int] = [96, 192, 384, 768],
         drop_path_rate: float = 0.0,
         layer_scale_init_value: float = 1e-6,
         # DINO arguments
@@ -204,16 +202,16 @@ class ConvNeXt(nn.Module):
             torch.nn.init.trunc_normal_(module.weight, std=0.02)
             nn.init.constant_(module.bias, 0)
 
-    def forward_features(self, x: Tensor | List[Tensor], masks: Optional[Tensor] = None) -> List[Dict[str, Tensor]]:
+    def forward_features(self, x: Tensor | list[Tensor], masks: Tensor | None = None) -> list[dict[str, Tensor]]:
         if isinstance(x, torch.Tensor):
             return self.forward_features_list([x], [masks])[0]
         else:
             return self.forward_features_list(x, masks)
 
-    def forward_features_list(self, x_list: List[Tensor], masks_list: List[Tensor]) -> List[Dict[str, Tensor]]:
+    def forward_features_list(self, x_list: list[Tensor], masks_list: list[Tensor]) -> list[dict[str, Tensor]]:
         output = []
         for x, masks in zip(x_list, masks_list):
-            h, w = x.shape[-2:]
+            _h, _w = x.shape[-2:]
             for i in range(4):
                 x = self.downsample_layers[i](x)
                 x = self.stages[i](x)
@@ -271,7 +269,7 @@ class ConvNeXt(nn.Module):
     def get_intermediate_layers(
         self,
         x,
-        n: Union[int, Sequence] = 1,  # Layers or n last layers to take,
+        n: int | Sequence = 1,  # Layers or n last layers to take,
         reshape: bool = False,
         return_class_token: bool = False,
         norm: bool = True,
