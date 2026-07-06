@@ -10,7 +10,6 @@ import torch
 from dinov3.eval.segmentation.models.backbone.dinov3_adapter import DINOv3_Adapter
 from dinov3.eval.segmentation.models.heads.mask2former_head import Mask2FormerHead
 
-
 BACKBONE_INTERMEDIATE_LAYERS = {
     "dinov3_vits16": [2, 5, 8, 11],
     "dinov3_vitb16": [2, 5, 8, 11],
