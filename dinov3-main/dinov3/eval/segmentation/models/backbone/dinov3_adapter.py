@@ -4,13 +4,12 @@
 # the terms of the DINOv3 License Agreement.
 
 import math
+from functools import partial
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-
-from functools import partial
+from torch import nn
 
 from dinov3.eval.segmentation.models.utils.ms_deform_attn import MSDeformAttn
 
@@ -27,10 +26,10 @@ def drop_path(x, drop_prob: float = 0.0, training: bool = False):
 
 
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
+    """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob: float = 0.0):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
@@ -54,7 +53,7 @@ def get_reference_points(spatial_shapes, device):
 
 
 def deform_inputs(x, patch_size):
-    bs, c, h, w = x.shape
+    _bs, _c, h, w = x.shape
     spatial_shapes = torch.as_tensor(
         [(h // 8, w // 8), (h // 16, w // 16), (h // 32, w // 32)], dtype=torch.long, device=x.device
     )
@@ -306,7 +305,7 @@ class DINOv3_Adapter(nn.Module):
     def __init__(
         self,
         backbone,
-        interaction_indexes=[9, 19, 29, 39],
+        interaction_indexes=None,
         pretrain_size=512,
         conv_inplane=64,
         n_points=4,
@@ -320,7 +319,9 @@ class DINOv3_Adapter(nn.Module):
         use_extra_extractor=True,
         with_cp=True,
     ):
-        super(DINOv3_Adapter, self).__init__()
+        if interaction_indexes is None:
+            interaction_indexes = [9, 19, 29, 39]
+        super().__init__()
         self.backbone = backbone
         # Important: we freeze the backbone
         self.backbone.requires_grad_(False)
@@ -349,9 +350,7 @@ class DINOv3_Adapter(nn.Module):
                     with_cffn=with_cffn,
                     cffn_ratio=cffn_ratio,
                     deform_ratio=deform_ratio,
-                    extra_extractor=(
-                        (True if i == len(self.interaction_indexes) - 1 else False) and use_extra_extractor
-                    ),
+                    extra_extractor=((i == len(self.interaction_indexes) - 1) and use_extra_extractor),
                     with_cp=with_cp,
                 )
                 for i in range(len(self.interaction_indexes))
@@ -374,10 +373,10 @@ class DINOv3_Adapter(nn.Module):
             torch.nn.init.trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm) or isinstance(m, nn.BatchNorm2d):
+        elif isinstance(m, (nn.LayerNorm, nn.BatchNorm2d)):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
-        elif isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+        elif isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
             fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
             fan_out //= m.groups
             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
@@ -417,13 +416,10 @@ class DINOv3_Adapter(nn.Module):
         # Code for matching with oss
         H_c, W_c = x.shape[2] // 16, x.shape[3] // 16
         H_toks, W_toks = x.shape[2] // self.patch_size, x.shape[3] // self.patch_size
-        bs, C, h, w = x.shape
+        bs, _C, _h, _w = x.shape
 
-        with torch.autocast("cuda", torch.bfloat16):
-            with torch.no_grad():
-                all_layers = self.backbone.get_intermediate_layers(
-                    x, n=self.interaction_indexes, return_class_token=True
-                )
+        with torch.autocast("cuda", torch.bfloat16), torch.no_grad():
+            all_layers = self.backbone.get_intermediate_layers(x, n=self.interaction_indexes, return_class_token=True)
 
         x_for_shape, _ = all_layers[0]
         bs, _, dim = x_for_shape.shape
@@ -440,7 +436,7 @@ class DINOv3_Adapter(nn.Module):
             ],
         )
 
-        outs = list()
+        outs = []
         for i, layer in enumerate(self.interactions):
             x, cls = all_layers[i]
             _, c, _ = layer(
