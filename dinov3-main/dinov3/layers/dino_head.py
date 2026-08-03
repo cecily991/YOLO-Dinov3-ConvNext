@@ -4,7 +4,7 @@
 # the terms of the DINOv3 License Agreement.
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.nn.init import trunc_normal_
 
 

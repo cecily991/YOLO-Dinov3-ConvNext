@@ -3,17 +3,22 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import os
 from enum import Enum
 
 import torch
+
 from dinov3.eval.segmentation.models import build_segmentation_decoder
 
 from .backbones import (
+    Weights as BackboneWeights,
+)
+from .backbones import (
+    convert_path_or_url_to_url,
     dinov3_vit7b16,
     dinov3_vitl16,
-    Weights as BackboneWeights,
-    convert_path_or_url_to_url,
 )
 from .utils import DINOV3_BASE_URL
 
@@ -39,7 +44,7 @@ def _make_dinov3_m2f_segmentor(
     else:
         raise AssertionError(f"No pretrained segmentation checkpoint available for {backbone_name}")
 
-    hidden_dim = 2048 if "hidden_dim" not in kwargs else kwargs["hidden_dim"]
+    hidden_dim = kwargs.get("hidden_dim", 2048)
     segmentor = build_segmentation_decoder(
         backbone_model=backbone_model,
         backbone_name=backbone_name,
@@ -49,9 +54,11 @@ def _make_dinov3_m2f_segmentor(
     )
     if pretrained:
         if type(segmentor_weights) is SegmentorWeights:
-            assert segmentor_weights == SegmentorWeights.ADE20K, f"Unsupported weights for segmentor: {segmentor_weights}"
+            assert segmentor_weights == SegmentorWeights.ADE20K, (
+                f"Unsupported weights for segmentor: {segmentor_weights}"
+            )
             segmentor_weights_name = segmentor_weights.value.lower()
-            hash = kwargs["hash"] if "hash" in kwargs else "bf307cb1"
+            hash = kwargs.get("hash", "bf307cb1")
             model_filename = f"{backbone_name}_{segmentor_weights_name}_m2f_head-{hash}.pth"
             url = os.path.join(DINOV3_BASE_URL, backbone_name, model_filename)
         else:
