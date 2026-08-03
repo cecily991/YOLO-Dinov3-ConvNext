@@ -126,8 +126,7 @@ def _build_sam(
     checkpoint=None,
     mobile_sam=False,
 ):
-    """
-    Build a Segment Anything Model (SAM) with specified encoder parameters.
+    """Build a Segment Anything Model (SAM) with specified encoder parameters.
 
     Args:
         encoder_embed_dim (int | List[int]): Embedding dimension for the encoder.
@@ -215,16 +214,15 @@ def _build_sam(
 
 def _build_sam2(
     encoder_embed_dim=1280,
-    encoder_stages=[2, 6, 36, 4],
+    encoder_stages=None,
     encoder_num_heads=2,
-    encoder_global_att_blocks=[7, 15, 23, 31],
-    encoder_backbone_channel_list=[1152, 576, 288, 144],
-    encoder_window_spatial_size=[7, 7],
-    encoder_window_spec=[8, 4, 16, 8],
+    encoder_global_att_blocks=None,
+    encoder_backbone_channel_list=None,
+    encoder_window_spatial_size=None,
+    encoder_window_spec=None,
     checkpoint=None,
 ):
-    """
-    Build and return a Segment Anything Model 2 (SAM2) with specified architecture parameters.
+    """Build and return a Segment Anything Model 2 (SAM2) with specified architecture parameters.
 
     Args:
         encoder_embed_dim (int, optional): Embedding dimension for the encoder.
@@ -243,6 +241,16 @@ def _build_sam2(
         >>> sam2_model = _build_sam2(encoder_embed_dim=96, encoder_stages=[1, 2, 7, 2])
         >>> sam2_model.eval()
     """
+    if encoder_window_spec is None:
+        encoder_window_spec = [8, 4, 16, 8]
+    if encoder_window_spatial_size is None:
+        encoder_window_spatial_size = [7, 7]
+    if encoder_backbone_channel_list is None:
+        encoder_backbone_channel_list = [1152, 576, 288, 144]
+    if encoder_global_att_blocks is None:
+        encoder_global_att_blocks = [7, 15, 23, 31]
+    if encoder_stages is None:
+        encoder_stages = [2, 6, 36, 4]
     image_encoder = ImageEncoder(
         trunk=Hiera(
             embed_dim=encoder_embed_dim,
@@ -292,11 +300,11 @@ def _build_sam2(
         no_obj_embed_spatial=is_sam2_1,
         proj_tpos_enc_in_obj_ptrs=is_sam2_1,
         use_signed_tpos_enc_to_obj_ptrs=is_sam2_1,
-        sam_mask_decoder_extra_args=dict(
-            dynamic_multimask_via_stability=True,
-            dynamic_multimask_stability_delta=0.05,
-            dynamic_multimask_stability_thresh=0.98,
-        ),
+        sam_mask_decoder_extra_args={
+            "dynamic_multimask_via_stability": True,
+            "dynamic_multimask_stability_delta": 0.05,
+            "dynamic_multimask_stability_thresh": 0.98,
+        },
     )
 
     if checkpoint is not None:
@@ -325,8 +333,7 @@ sam_model_map = {
 
 
 def build_sam(ckpt="sam_b.pt"):
-    """
-    Build and return a Segment Anything Model (SAM) based on the provided checkpoint.
+    """Build and return a Segment Anything Model (SAM) based on the provided checkpoint.
 
     Args:
         ckpt (str | Path, optional): Path to the checkpoint file or name of a pre-defined SAM model.
@@ -348,7 +355,7 @@ def build_sam(ckpt="sam_b.pt"):
     """
     model_builder = None
     ckpt = str(ckpt)  # to allow Path ckpt types
-    for k in sam_model_map.keys():
+    for k in sam_model_map:
         if ckpt.endswith(k):
             model_builder = sam_model_map.get(k)
 
