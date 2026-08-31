@@ -3,6 +3,8 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import gc
 import logging
 from functools import partial
@@ -11,7 +13,7 @@ import torch
 from omegaconf import OmegaConf
 from torch import Tensor, nn
 
-import dinov3.distributed as distributed
+from dinov3 import distributed
 from dinov3.checkpointer import init_fsdp_model_from_checkpoint
 from dinov3.configs import get_default_config
 from dinov3.data import DataAugmentationDINO
@@ -27,9 +29,8 @@ logger = logging.getLogger("dinov3")
 
 
 class SSLMetaArch(nn.Module):
-    """
-    Modified version of SSLMetaArchCompilable including gram loss:
-    - Gram loss is used only if gram.use_loss is set to true
+    """Modified version of SSLMetaArchCompilable including gram loss: - Gram loss is used only if gram.use_loss is set
+    to true.
     """
 
     def __init__(self, cfg):
@@ -45,9 +46,9 @@ class SSLMetaArch(nn.Module):
 
         self.cfg = cfg
 
-        student_model_dict = dict()
-        teacher_model_dict = dict()
-        gram_model_dict = dict()
+        student_model_dict = {}
+        teacher_model_dict = {}
+        gram_model_dict = {}
 
         student_backbone, teacher_backbone, embed_dim = build_model_from_cfg(cfg)
         torch.cuda.empty_cache()
@@ -175,7 +176,7 @@ class SSLMetaArch(nn.Module):
                 remove_neg=self.cfg.gram.remove_neg,
             )
             # Construct gram teacher
-            self.has_gram_teacher = True if not cfg.gram.ema_teacher else False
+            self.has_gram_teacher = bool(not cfg.gram.ema_teacher)
             if self.has_gram_teacher:
                 self.gram_teacher = nn.ModuleDict(gram_model_dict)
                 self.gram_teacher.requires_grad_(False)
@@ -248,7 +249,7 @@ class SSLMetaArch(nn.Module):
             if cfg.crops.gram_teacher_crops_size is None and self.has_gram_teacher:
                 raise ValueError("cfg.crops.gram_teacher_crops_size must be set to use gram loss")
             if cfg.crops.gram_teacher_crops_size is not None and self.gram_ema_teacher:
-                raise ValueError("cfg.crops.gram_teacher_crops_size shoud be None when gram.ema_teacher=True")
+                raise ValueError("cfg.crops.gram_teacher_crops_size should be None when gram.ema_teacher=True")
 
             self.student_crop_size = cfg.crops.global_crops_size
             self.gram_global_teacher_resize_method = cfg.gram.global_teacher_resize_method
@@ -272,7 +273,7 @@ class SSLMetaArch(nn.Module):
         assert distillation_cfg.dino.head_n_prototypes == self.cfg.dino.head_n_prototypes
         assert distillation_cfg.student.patch_size == self.cfg.student.patch_size
 
-        teacher_model_dict = dict()
+        teacher_model_dict = {}
 
         backbone, embed_dim = build_model_from_cfg(distillation_cfg, only_teacher=True)
         teacher_model_dict["backbone"] = backbone
@@ -432,7 +433,7 @@ class SSLMetaArch(nn.Module):
         teacher_temp,
         n_masked_patches_tensor,
     ):
-        n_crops, B, rgb, H, W = images.shape
+        n_crops, B, _rgb, _H, _W = images.shape
         images = images.flatten(0, 1)
 
         backbone_out = self.teacher.backbone(images, is_training=True)
@@ -477,7 +478,7 @@ class SSLMetaArch(nn.Module):
         else:
             if not self.gram_teacher_initialized:
                 raise ValueError("Gram teacher has not been initialized. Load a checkpoint or from the EMA teacher.")
-            n_crops, B, rgb, H, W = images.shape
+            _n_crops, _B, _rgb, H, _W = images.shape
             images = images.flatten(0, 1)  # [n_crops * B, rgb, H, W]
 
             with torch.no_grad():
@@ -523,7 +524,7 @@ class SSLMetaArch(nn.Module):
 
     def get_student_output(self, *, global_crops, local_crops, upperbound, masks, mask_indices_list):
         n_global_crops, B, rgb, H, W = global_crops.shape
-        n_local_crops, B, rgb, H, W = local_crops.shape
+        n_local_crops, B, _rgb, _H, _W = local_crops.shape
 
         global_crops = global_crops.flatten(0, 1)
 
@@ -708,7 +709,7 @@ class SSLMetaArch(nn.Module):
         if self.ema_params_lists is None:
             student_param_list = []
             teacher_param_list = []
-            for k in self.student.keys():
+            for k in self.student:
                 for ms, mt in zip(self.student[k].parameters(), self.model_ema[k].parameters()):
                     student_param_list += [ms]
                     teacher_param_list += [mt]
@@ -726,7 +727,7 @@ class SSLMetaArch(nn.Module):
         if self.gram_params_lists is None:
             teacher_param_list = []
             gramteacher_param_list = []
-            for k in self.gram_teacher.keys():
+            for k in self.gram_teacher:
                 for mgt, mt in zip(self.gram_teacher[k].parameters(), self.teacher[k].parameters()):
                     gramteacher_param_list += [mgt]
                     teacher_param_list += [mt]
@@ -775,7 +776,7 @@ class SSLMetaArch(nn.Module):
     def get_params_groups(self):
         all_params_groups = []
         for name, m in self.student.items():
-            logger.info(f"Getting paramer groups for {name}")
+            logger.info(f"Getting parameter groups for {name}")
             all_params_groups += self.get_maybe_fused_params_for_submodel(m)
         return all_params_groups
 
@@ -799,9 +800,7 @@ class SSLMetaArch(nn.Module):
         )
 
     def broadcast_to_subgroups(self, tensor, over_dim, global_batch_size=None):
-        """
-        This is an operation that takes a tensor from the default process group, gathers it, stacks it, then scatters it within a smaller process subgroup
-        """
+        """This is an operation that takes a tensor from the default process group, gathers it, stacks it, then scatters it within a smaller process subgroup."""
         world_size = distributed.get_world_size()
         subgroup_size = distributed.get_subgroup_size()
         gathered = [torch.zeros_like(tensor) for _ in range(world_size)]

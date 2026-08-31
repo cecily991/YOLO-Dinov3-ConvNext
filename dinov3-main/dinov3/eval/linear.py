@@ -3,6 +3,8 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -12,15 +14,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable
 
 import torch
-import torch.backends.cudnn as cudnn
-import torch.nn as nn
+from dinov3.eval.setup import ModelConfig, load_model_and_context
 from omegaconf import MISSING
+from torch import nn
+from torch.backends import cudnn
 from torch.nn.parallel import DistributedDataParallel
 
-import dinov3.distributed as distributed
+from dinov3 import distributed
 from dinov3.checkpointer import (
     CheckpointRetentionPolicy,
     cleanup_checkpoint,
@@ -38,7 +41,6 @@ from dinov3.data.transforms import (
 from dinov3.eval.data import create_train_dataset_dict, get_num_classes, pad_multilabel_and_collate
 from dinov3.eval.helpers import args_dict_to_dataclass, cli_parser, write_results
 from dinov3.eval.metrics import ClassificationMetricType, build_classification_metric
-from dinov3.eval.setup import ModelConfig, load_model_and_context
 from dinov3.eval.utils import LossType, ModelWithIntermediateLayers, average_metrics, evaluate
 from dinov3.eval.utils import save_results as default_save_results_func
 from dinov3.logging import MetricLogger, SmoothedValue
@@ -78,7 +80,7 @@ class SchedulerType(Enum):
         return scheduler
 
 
-_DEFAULT_LR_LIST: Tuple[float, ...] = (1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 0.1)
+_DEFAULT_LR_LIST: tuple[float, ...] = (1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 0.1)
 
 
 @dataclass
@@ -89,8 +91,8 @@ class TrainConfig:
     batch_size: int = 128  # batch size (per GPU)
     num_workers: int = 8
     # Linear Head Parameters
-    learning_rates: Tuple[float, ...] = _DEFAULT_LR_LIST  # learning rates to grid search
-    n_last_blocks_list: Tuple[int] = (1,)  # number of backbone last blocks used for the linear classifier
+    learning_rates: tuple[float, ...] = _DEFAULT_LR_LIST  # learning rates to grid search
+    n_last_blocks_list: tuple[int] = (1,)  # number of backbone last blocks used for the linear classifier
     loss_type: LossType = LossType.CROSS_ENTROPY
     optimizer_type: OptimizerType = OptimizerType.SGD
     scheduler_type: SchedulerType = SchedulerType.COSINE_ANNEALING
@@ -102,13 +104,13 @@ class TrainConfig:
     eval_period_iterations: int | None = None  # number of iterations between two evaluations (default: one epoch)
     checkpoint_retention_policy: CheckpointRetentionPolicy = CheckpointRetentionPolicy.NONE  # keep checkpoints or not
     resume: bool = True  # whether to resume from existing checkpoints
-    classifier_fpath: Optional[str] = None  # path to a file containing pretrained linear classifiers
+    classifier_fpath: str | None = None  # path to a file containing pretrained linear classifiers
 
 
 @dataclass
 class EvalConfig:
-    test_datasets: Tuple[str, ...] = ()  # additional test dataset paths
-    test_metric_types: Tuple[ClassificationMetricType, ...] = ()
+    test_datasets: tuple[str, ...] = ()  # additional test dataset paths
+    test_metric_types: tuple[ClassificationMetricType, ...] = ()
     batch_size: int = 256  # batch size (per GPU)
     num_workers: int = 8
 
@@ -122,7 +124,7 @@ class TransformConfig:
 @dataclass
 class FewShotConfig:
     enable: bool = False  # whether to use few-shot evaluation
-    k_or_percent: Optional[float] = None  # number of elements or % to take per class
+    k_or_percent: float | None = None  # number of elements or % to take per class
     n_tries: int = 1  # number of tries for few-shot evaluation
 
 
@@ -161,7 +163,7 @@ def create_linear_input(x_tokens_list, use_n_blocks, use_avgpool):
 
 
 class LinearClassifier(nn.Module):
-    """Linear layer to train on top of frozen features"""
+    """Linear layer to train on top of frozen features."""
 
     def __init__(self, out_dim, use_n_blocks, use_avgpool, num_classes=1000):
         super().__init__()
@@ -221,9 +223,9 @@ def setup_linear_classifiers(sample_output, n_last_blocks_list, learning_rates, 
                     out_dim, use_n_blocks=n, use_avgpool=avgpool, num_classes=num_classes
                 )
                 linear_classifier = linear_classifier.cuda()
-                linear_classifiers_dict[
-                    f"classifier_{n}_blocks_avgpool_{avgpool}_lr_{lr:.5f}".replace(".", "_")
-                ] = linear_classifier
+                linear_classifiers_dict[f"classifier_{n}_blocks_avgpool_{avgpool}_lr_{lr:.5f}".replace(".", "_")] = (
+                    linear_classifier
+                )
                 optim_param_groups.append({"params": linear_classifier.parameters(), "lr": lr})
 
     linear_classifiers = AllClassifiers(linear_classifiers_dict)
@@ -279,7 +281,7 @@ class Evaluator:
     metric_type: ClassificationMetricType
     metrics_file_path: str
     training_num_classes: int
-    save_results_func: Optional[Callable]
+    save_results_func: Callable | None
 
     def __post_init__(self):
         self.data_loader, self.class_mapping = make_eval_data_loader(
@@ -301,7 +303,7 @@ class Evaluator:
         prefixstring="",
         best_classifier_on_val=None,
         accumulate_results=False,
-    ) -> Tuple[Dict[str, Any], Optional[Dict[str, torch.Tensor]]]:
+    ) -> tuple[dict[str, Any], dict[str, torch.Tensor] | None]:
         logger.info("running validation !")
 
         num_classes = len(self.class_mapping) if self.class_mapping is not None else self.training_num_classes
@@ -343,8 +345,7 @@ class Evaluator:
         if distributed.is_main_process():
             with open(self.metrics_file_path, "a") as f:
                 f.write(f"iter: {iteration}\n")
-                for k, v in results_dict.items():
-                    f.write(json.dumps({k: v}) + "\n")
+                f.writelines(json.dumps({k: v}) + "\n" for k, v in results_dict.items())
                 f.write("\n")
 
         return results_dict, accumulated_best_results
@@ -354,7 +355,7 @@ class Evaluator:
         feature_model,
         linear_classifiers,
         iteration: int,
-        best_classifier_on_val: Optional[Any] = None,
+        best_classifier_on_val: Any | None = None,
         save_filename_suffix: str = "",
         prefixstring: str = "",
     ):
@@ -387,7 +388,7 @@ def make_evaluators(
     transform_config: TransformConfig,
     metrics_file_path: str,
     training_num_classes: int,
-    save_results_func: Optional[Callable],
+    save_results_func: Callable | None,
 ):
     test_metric_types = eval_config.test_metric_types
     if len(test_metric_types) == 0:
@@ -406,8 +407,8 @@ def make_evaluators(
             save_results_func=save_results_func,
         )
         for dataset_str, metric_type in zip(
-            (val_dataset,) + tuple(eval_config.test_datasets),
-            (val_metric_type,) + tuple(test_metric_types),
+            (val_dataset, *tuple(eval_config.test_datasets)),
+            (val_metric_type, *tuple(test_metric_types)),
         )
     ]
     return val_evaluator, test_evaluators
@@ -473,7 +474,15 @@ def train_linear_classifiers(
     val_evaluator: Evaluator,
     checkpoint_output_dir: str,
 ):
-    (linear_classifiers, start_iter, max_iter, criterion, optimizer, scheduler, best_accuracy,) = setup_linear_training(
+    (
+        linear_classifiers,
+        start_iter,
+        max_iter,
+        criterion,
+        optimizer,
+        scheduler,
+        best_accuracy,
+    ) = setup_linear_training(
         config=train_config,
         sample_output=feature_model(train_dataset[0][0].unsqueeze(0).cuda()),
         training_num_classes=training_num_classes,
@@ -496,7 +505,7 @@ def train_linear_classifiers(
     )
 
     iteration = start_iter
-    logger.info("Starting training from iteration {}".format(start_iter))
+    logger.info(f"Starting training from iteration {start_iter}")
     metric_logger = MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value:.6g}"))
     header = "Training"
@@ -616,7 +625,7 @@ def eval_linear_with_model(*, model: torch.nn.Module, autocast_dtype, config: Li
     )
     results_dict = {}
     checkpoint_output_dirs: list = []
-    for _try in train_dataset_dict.keys():
+    for _try in train_dataset_dict:
         if len(train_dataset_dict) > 1:
             checkpoint_output_dir = os.path.join(config.output_dir, f"checkpoints_{_try}")
             save_filename_suffix = f"_{_try}"
@@ -665,7 +674,7 @@ def eval_linear_with_model(*, model: torch.nn.Module, autocast_dtype, config: Li
 
 
 def benchmark_launcher(eval_args: dict[str, object]) -> dict[str, Any]:
-    """Initialization of distributed and logging are preconditions for this method"""
+    """Initialization of distributed and logging are preconditions for this method."""
     dataclass_config, output_dir = args_dict_to_dataclass(eval_args=eval_args, config_dataclass=LinearEvalConfig)
     model, model_context = load_model_and_context(dataclass_config.model, output_dir=output_dir)
     results_dict = eval_linear_with_model(
