@@ -1,7 +1,8 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
+from __future__ import annotations
+
 import copy
-from typing import List, Optional
 
 import cv2
 import numpy as np
@@ -10,8 +11,7 @@ from ultralytics.utils import LOGGER
 
 
 class GMC:
-    """
-    Generalized Motion Compensation (GMC) class for tracking and object detection in video frames.
+    """Generalized Motion Compensation (GMC) class for tracking and object detection in video frames.
 
     This class provides methods for tracking and detecting objects based on several tracking algorithms including ORB,
     SIFT, ECC, and Sparse Optical Flow. It also supports downscaling of frames for computational efficiency.
@@ -42,8 +42,7 @@ class GMC:
     """
 
     def __init__(self, method: str = "sparseOptFlow", downscale: int = 2) -> None:
-        """
-        Initialize a Generalized Motion Compensation (GMC) object with tracking method and downscale factor.
+        """Initialize a Generalized Motion Compensation (GMC) object with tracking method and downscale factor.
 
         Args:
             method (str): The tracking method to use. Options include 'orb', 'sift', 'ecc', 'sparseOptFlow', 'none'.
@@ -75,9 +74,14 @@ class GMC:
             self.criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
 
         elif self.method == "sparseOptFlow":
-            self.feature_params = dict(
-                maxCorners=1000, qualityLevel=0.01, minDistance=1, blockSize=3, useHarrisDetector=False, k=0.04
-            )
+            self.feature_params = {
+                "maxCorners": 1000,
+                "qualityLevel": 0.01,
+                "minDistance": 1,
+                "blockSize": 3,
+                "useHarrisDetector": False,
+                "k": 0.04,
+            }
 
         elif self.method in {"none", "None", None}:
             self.method = None
@@ -89,9 +93,8 @@ class GMC:
         self.prevDescriptors = None
         self.initializedFirstFrame = False
 
-    def apply(self, raw_frame: np.ndarray, detections: Optional[List] = None) -> np.ndarray:
-        """
-        Apply object detection on a raw frame using the specified method.
+    def apply(self, raw_frame: np.ndarray, detections: list | None = None) -> np.ndarray:
+        """Apply object detection on a raw frame using the specified method.
 
         Args:
             raw_frame (np.ndarray): The raw frame to be processed, with shape (H, W, C).
@@ -117,8 +120,7 @@ class GMC:
             return np.eye(2, 3)
 
     def apply_ecc(self, raw_frame: np.ndarray) -> np.ndarray:
-        """
-        Apply the ECC (Enhanced Correlation Coefficient) algorithm to a raw frame for motion compensation.
+        """Apply the ECC (Enhanced Correlation Coefficient) algorithm to a raw frame for motion compensation.
 
         Args:
             raw_frame (np.ndarray): The raw frame to be processed, with shape (H, W, C).
@@ -156,9 +158,8 @@ class GMC:
 
         return H
 
-    def apply_features(self, raw_frame: np.ndarray, detections: Optional[List] = None) -> np.ndarray:
-        """
-        Apply feature-based methods like ORB or SIFT to a raw frame.
+    def apply_features(self, raw_frame: np.ndarray, detections: list | None = None) -> np.ndarray:
+        """Apply feature-based methods like ORB or SIFT to a raw frame.
 
         Args:
             raw_frame (np.ndarray): The raw frame to be processed, with shape (H, W, C).
@@ -275,8 +276,7 @@ class GMC:
         return H
 
     def apply_sparseoptflow(self, raw_frame: np.ndarray) -> np.ndarray:
-        """
-        Apply Sparse Optical Flow method to a raw frame.
+        """Apply Sparse Optical Flow method to a raw frame.
 
         Args:
             raw_frame (np.ndarray): The raw frame to be processed, with shape (H, W, C).
