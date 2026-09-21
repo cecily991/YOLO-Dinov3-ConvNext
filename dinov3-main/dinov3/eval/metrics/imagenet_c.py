@@ -3,8 +3,10 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
 import torch
@@ -167,7 +169,7 @@ ID_TO_CORRUPTION_LEVEL = {i: k for k, i in CORRUPTION_LEVEL_TO_ID.items()}
 
 def compute_relative_average_scores(scores: Scores, inv_scores_ref: Scores = ALEXNET_INVERSE_SCORES) -> AverageScores:
     rel_scores = {}
-    for corruption_type in inv_scores_ref.keys():
+    for corruption_type in inv_scores_ref:
         if corruption_type not in scores:
             logger.info(f"No results for split {corruption_type}")
             continue
@@ -186,9 +188,8 @@ def compute_relative_average_scores(scores: Scores, inv_scores_ref: Scores = ALE
 
 
 class ImageNet_C_Metric(Metric):
-
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = False
+    higher_is_better: bool | None = False
     full_state_update: bool = False
 
     def __init__(self, **kwargs: Any) -> None:

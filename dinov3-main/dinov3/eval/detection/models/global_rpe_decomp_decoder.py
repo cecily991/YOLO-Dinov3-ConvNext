@@ -11,8 +11,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.utils.checkpoint as checkpoint
+from torch import nn
+from torch.utils import checkpoint
 
 from ..util.box_ops import box_xyxy_to_cxcywh, delta2bbox
 from ..util.misc import _get_activation_fn, _get_clones, inverse_sigmoid

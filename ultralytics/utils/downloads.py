@@ -1,12 +1,13 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
 
+from __future__ import annotations
+
 import re
 import shutil
 import subprocess
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import List, Tuple
 from urllib import parse, request
 
 from ultralytics.utils import LOGGER, TQDM, checks, clean_url, emojis, is_online, url2file
@@ -42,8 +43,7 @@ GITHUB_ASSETS_STEMS = frozenset(k.rpartition(".")[0] for k in GITHUB_ASSETS_NAME
 
 
 def is_url(url, check: bool = False) -> bool:
-    """
-    Validate if the given string is a URL and optionally check if the URL exists online.
+    """Validate if the given string is a URL and optionally check if the URL exists online.
 
     Args:
         url (str): The string to be validated as a URL.
@@ -69,8 +69,7 @@ def is_url(url, check: bool = False) -> bool:
 
 
 def delete_dsstore(path, files_to_delete=(".DS_Store", "__MACOSX")):
-    """
-    Delete all specified system files in a directory.
+    """Delete all specified system files in a directory.
 
     Args:
         path (str | Path): The directory path where the files should be deleted.
@@ -92,8 +91,7 @@ def delete_dsstore(path, files_to_delete=(".DS_Store", "__MACOSX")):
 
 
 def zip_directory(directory, compress: bool = True, exclude=(".DS_Store", "__MACOSX"), progress: bool = True) -> Path:
-    """
-    Zip the contents of a directory, excluding specified files.
+    """Zip the contents of a directory, excluding specified files.
 
     The resulting zip file is named after the directory and placed alongside it.
 
@@ -135,12 +133,11 @@ def unzip_file(
     exist_ok: bool = False,
     progress: bool = True,
 ) -> Path:
-    """
-    Unzip a *.zip file to the specified path, excluding specified files.
+    """Unzip a *.zip file to the specified path, excluding specified files.
 
-    If the zipfile does not contain a single top-level directory, the function will create a new
-    directory with the same name as the zipfile (without the extension) to extract its contents.
-    If a path is not provided, the function will use the parent directory of the zipfile as the default path.
+    If the zipfile does not contain a single top-level directory, the function will create a new directory with the same
+    name as the zipfile (without the extension) to extract its contents. If a path is not provided, the function will
+    use the parent directory of the zipfile as the default path.
 
     Args:
         file (str | Path): The path to the zipfile to be extracted.
@@ -176,7 +173,7 @@ def unzip_file(
         if unzip_as_dir:
             # Zip has 1 top-level directory
             extract_path = path  # i.e. ../datasets
-            path = Path(path) / list(top_level_dirs)[0]  # i.e. extract coco8/ dir to ../datasets/
+            path = Path(path) / next(iter(top_level_dirs))  # i.e. extract coco8/ dir to ../datasets/
         else:
             # Zip has multiple files at top level
             path = extract_path = Path(path) / Path(file).stem  # i.e. extract multiple files to ../datasets/coco8/
@@ -203,8 +200,7 @@ def check_disk_space(
     sf: float = 1.5,
     hard: bool = True,
 ) -> bool:
-    """
-    Check if there is sufficient disk space to download and store a file.
+    """Check if there is sufficient disk space to download and store a file.
 
     Args:
         url (str, optional): The URL to the file.
@@ -226,7 +222,7 @@ def check_disk_space(
     # Check file size
     gib = 1 << 30  # bytes per GiB
     data = int(r.headers.get("Content-Length", 0)) / gib  # file size (GB)
-    total, used, free = (x / gib for x in shutil.disk_usage(path))  # bytes
+    _total, _used, free = (x / gib for x in shutil.disk_usage(path))  # bytes
 
     if data * sf < free:
         return True  # sufficient space
@@ -242,9 +238,8 @@ def check_disk_space(
     return False
 
 
-def get_google_drive_file_info(link: str) -> Tuple[str, str]:
-    """
-    Retrieve the direct download link and filename for a shareable Google Drive file link.
+def get_google_drive_file_info(link: str) -> tuple[str, str]:
+    """Retrieve the direct download link and filename for a shareable Google Drive file link.
 
     Args:
         link (str): The shareable link of the Google Drive file.
@@ -294,15 +289,14 @@ def safe_download(
     exist_ok: bool = False,
     progress: bool = True,
 ):
-    """
-    Download files from a URL with options for retrying, unzipping, and deleting the downloaded file.
+    """Download files from a URL with options for retrying, unzipping, and deleting the downloaded file.
 
     Args:
         url (str): The URL of the file to be downloaded.
-        file (str, optional): The filename of the downloaded file.
-            If not provided, the file will be saved with the same name as the URL.
-        dir (str | Path, optional): The directory to save the downloaded file.
-            If not provided, the file will be saved in the current working directory.
+        file (str, optional): The filename of the downloaded file. If not provided, the file will be saved with the same
+            name as the URL.
+        dir (str | Path, optional): The directory to save the downloaded file. If not provided, the file will be saved
+            in the current working directory.
         unzip (bool, optional): Whether to unzip the downloaded file.
         delete (bool, optional): Whether to delete the downloaded file after unzipping.
         curl (bool, optional): Whether to use curl command line tool for downloading.
@@ -351,11 +345,10 @@ def safe_download(
                         unit="B",
                         unit_scale=True,
                         unit_divisor=1024,
-                    ) as pbar:
-                        with open(f, "wb") as f_opened:
-                            for data in response:
-                                f_opened.write(data)
-                                pbar.update(len(data))
+                    ) as pbar, open(f, "wb") as f_opened:
+                        for data in response:
+                            f_opened.write(data)
+                            pbar.update(len(data))
 
                 if f.exists():
                     if f.stat().st_size > min_bytes:
@@ -387,9 +380,8 @@ def get_github_assets(
     repo: str = "ultralytics/assets",
     version: str = "latest",
     retry: bool = False,
-) -> Tuple[str, List[str]]:
-    """
-    Retrieve the specified version's tag and assets from a GitHub repository.
+) -> tuple[str, list[str]]:
+    """Retrieve the specified version's tag and assets from a GitHub repository.
 
     If the version is not specified, the function fetches the latest release assets.
 
@@ -421,8 +413,7 @@ def get_github_assets(
 
 
 def attempt_download_asset(file, repo: str = "ultralytics/assets", release: str = "v8.3.0", **kwargs) -> str:
-    """
-    Attempt to download a file from GitHub release assets if it is not found locally.
+    """Attempt to download a file from GitHub release assets if it is not found locally.
 
     Args:
         file (str | Path): The filename or file path to be downloaded.
@@ -481,8 +472,7 @@ def download(
     retry: int = 3,
     exist_ok: bool = False,
 ):
-    """
-    Download files from specified URLs to a given directory.
+    """Download files from specified URLs to a given directory.
 
     Supports concurrent downloads if multiple threads are specified.
 

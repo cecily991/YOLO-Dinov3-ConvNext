@@ -7,17 +7,16 @@ dependencies:
   - omegaconf
   - pip
   - pip:
-    - ftfy # needed for dino.txt
-    - iopath
-    - omegaconf
-    - pandas 
-    - regex # needed for dino.txt
-    - pandas
-    - scikit-learn
-    - scikit-learn-intelex
-    - submitit
-    - termcolor
-    - torch 
-    - torchvision 
-    - torchmetrics
-    
+      - ftfy # needed for dino.txt
+      - iopath
+      - omegaconf
+      - pandas
+      - regex # needed for dino.txt
+      - pandas
+      - scikit-learn
+      - scikit-learn-intelex
+      - submitit
+      - termcolor
+      - torch
+      - torchvision
+      - torchmetrics

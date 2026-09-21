@@ -43,7 +43,7 @@ def collate_data_and_cast(
     probs = torch.linspace(*mask_ratio_tuple, n_samples_masked + 1)
     upperbound = 0
     masks_list = []
-    for i in range(0, n_samples_masked):
+    for i in range(n_samples_masked):
         prob_max = probs[i + 1]
         mask = torch.BoolTensor(mask_generator(int(N * prob_max)))
         if random_circular_shift:  # apply le random circular shift to
@@ -119,7 +119,7 @@ def get_batch_subset(collated_data_batch, divide_by):
         "n_masked_patches": torch.full((1,), fill_value=mask_indices_list.shape[0], dtype=torch.long),
     }
 
-    if "global_batch_size" in collated_data_batch.keys():
+    if "global_batch_size" in collated_data_batch:
         new_batch["global_batch_size"] = collated_data_batch["global_batch_size"] // divide_by
 
     return new_batch

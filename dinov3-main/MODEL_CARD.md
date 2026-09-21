@@ -42,7 +42,7 @@ The models can be used without fine-tuning, with downstream classifiers as simpl
 - on image classification, with logistic regression classifiers applied on the class token
 - on image classification, with a linear layer applied on the class token and the average of the patch tokens
 - on image retrieval using nearest neighbors
-- on geometric and semantic 3D keypoint correspondances
+- on geometric and semantic 3D keypoint correspondences
 - on depth estimation, semantic segmentation, using linear layers
 - on unsupervised object discovery
 - on video segmentation tracking
@@ -70,9 +70,9 @@ Use the code below to get started with the model.
 import torch
 
 model = torch.hub.load(
-    repo_or_dir='facebookresearch/dinov3',
-    model='<MODEL_NAME>',
-    weights='<PATH/OR/URL/TO/CHECKPOINT>',
+    repo_or_dir="facebookresearch/dinov3",
+    model="<MODEL_NAME>",
+    weights="<PATH/OR/URL/TO/CHECKPOINT>",
 )
 
 # where MODEL_NAME can be one of:
@@ -89,9 +89,9 @@ model = torch.hub.load(
 
 # For instance
 dinov3_vits16 = torch.hub.load(
-    repo_or_dir='facebookresearch/dinov3',
-    model='dinov3_vits16',
-    weights='<PATH/OR/URL/TO/DINOV3/VITS16/LVD1689M/CHECKPOINT>',
+    repo_or_dir="facebookresearch/dinov3",
+    model="dinov3_vits16",
+    weights="<PATH/OR/URL/TO/DINOV3/VITS16/LVD1689M/CHECKPOINT>",
 )
 ```
 
