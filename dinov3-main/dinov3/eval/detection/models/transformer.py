@@ -39,7 +39,7 @@ class Transformer(nn.Module):
         decoder_type="deform",
         proposal_feature_levels=1,
         proposal_in_stride=16,
-        proposal_tgt_strides=[8, 16, 32, 64],
+        proposal_tgt_strides=None,
         proposal_min_size=50,
         args=None,
         # transformer_encoder
@@ -50,6 +50,8 @@ class Transformer(nn.Module):
         normalize_before=False,
         num_encoder_layers=6,
     ):
+        if proposal_tgt_strides is None:
+            proposal_tgt_strides = [8, 16, 32, 64]
         super().__init__()
 
         self.d_model = d_model

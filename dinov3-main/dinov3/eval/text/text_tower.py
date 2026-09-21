@@ -3,14 +3,15 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import torch
+from torch import nn
 
 from dinov3.eval.text.text_transformer import TextTransformer
 from dinov3.layers import CausalSelfAttentionBlock
-from torch import nn
 
 logger = logging.getLogger("dinov3")
 
@@ -45,9 +46,7 @@ class TextHead(nn.Module):
         self.num_blocks = num_blocks
         self.linear_projection = nn.Identity()
         if input_dim != embed_dim or use_linear_projection:
-            logger.info(
-                f"Text tower : Using a linear projection from {input_dim} to {embed_dim}"
-            )
+            logger.info(f"Text tower : Using a linear projection from {input_dim} to {embed_dim}")
             self.linear_projection = nn.Linear(input_dim, embed_dim, bias=False)
 
     def init_weights(self):
@@ -110,9 +109,7 @@ class TextTower(nn.Module):
             features = text_tokens[:, -1]
         elif self.tokens_pooler_type == "argmax":
             assert token_indices is not None
-            features = text_tokens[
-                torch.arange(text_tokens.shape[0]), token_indices.argmax(dim=-1)
-            ]
+            features = text_tokens[torch.arange(text_tokens.shape[0]), token_indices.argmax(dim=-1)]
         else:
             raise ValueError(f"Unknown text tokens pooler type: {self.pooler_type}")
         return features
@@ -146,7 +143,7 @@ def build_text_model(
     head_blocks_drop_prob: float,
     tokens_pooler_type: str,
     use_linear_projection: bool,
-    backbone: Optional[nn.Module] = None,
+    backbone: nn.Module | None = None,
 ):
     if backbone is None:
         if backbone_model_config is not None:

@@ -3,7 +3,7 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-import torch.nn as nn
+from torch import nn
 
 
 class LayerNorm2D(nn.Module):
@@ -12,9 +12,7 @@ class LayerNorm2D(nn.Module):
         self.ln = norm_layer(normalized_shape) if norm_layer is not None else nn.Identity()
 
     def forward(self, x):
-        """
-        x: N C H W
-        """
+        """X: N C H W."""
         x = x.permute(0, 2, 3, 1)
         x = self.ln(x)
         x = x.permute(0, 3, 1, 2)

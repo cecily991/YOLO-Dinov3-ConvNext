@@ -3,11 +3,13 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import json
 import os
 import random
 from enum import Enum
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Union
 
 from .decoders import ImageDataDecoder, TargetDecoder
 from .extended import ExtendedVisionDataset
@@ -20,17 +22,13 @@ class _Split(Enum):
     VAL = "val"
 
 
-def read_images_and_captions(root: str, split: _Split) -> List[Dict]:
+def read_images_and_captions(root: str, split: _Split) -> list[dict]:
     image_dir = None
     if _Split(split) == _Split.TRAIN:
-        annotations_full_path = os.path.join(
-            root, "annotations_trainval2014/annotations/captions_train2014.json"
-        )
+        annotations_full_path = os.path.join(root, "annotations_trainval2014/annotations/captions_train2014.json")
         image_dir = os.path.join(root, "train2014/train2014")
     else:
-        annotations_full_path = os.path.join(
-            root, "annotations_trainval2017/annotations/captions_train2017.json"
-        )
+        annotations_full_path = os.path.join(root, "annotations_trainval2017/annotations/captions_train2017.json")
         image_dir = os.path.join(root, "val2017/val2017")
     with open(annotations_full_path) as f:
         all_annotations = json.load(f)
@@ -54,11 +52,11 @@ class CocoCaptions(ExtendedVisionDataset):
     def __init__(
         self,
         *,
-        split: "CocoCaptions.Split",
-        root: Optional[str] = None,
-        transforms: Optional[Callable] = None,
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
+        split: CocoCaptions.Split,
+        root: str | None = None,
+        transforms: Callable | None = None,
+        transform: Callable | None = None,
+        target_transform: Callable | None = None,
     ) -> None:
         super().__init__(
             root=root,

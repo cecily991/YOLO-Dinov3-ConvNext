@@ -11,12 +11,12 @@ from collections import defaultdict, deque
 
 import torch
 
-import dinov3.distributed as distributed
+from dinov3 import distributed
 
 logger = logging.getLogger("dinov3")
 
 
-class MetricLogger(object):
+class MetricLogger:
     def __init__(self, delimiter="\t", output_file=None):
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter
@@ -34,12 +34,12 @@ class MetricLogger(object):
             return self.meters[attr]
         if attr in self.__dict__:
             return self.__dict__[attr]
-        raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, attr))
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{attr}'")
 
     def __str__(self):
         loss_str = []
         for name, meter in self.meters.items():
-            loss_str.append("{}: {}".format(name, str(meter)))
+            loss_str.append(f"{name}: {meter!s}")
         return self.delimiter.join(loss_str)
 
     def synchronize_between_processes(self):
@@ -52,15 +52,14 @@ class MetricLogger(object):
     def dump_in_output_file(self, iteration, iter_time, data_time):
         if self.output_file is None or not distributed.is_main_process():
             return
-        dict_to_dump = dict(
-            iteration=iteration,
-            iter_time=iter_time,
-            data_time=data_time,
-        )
+        dict_to_dump = {
+            "iteration": iteration,
+            "iter_time": iter_time,
+            "data_time": data_time,
+        }
         dict_to_dump.update({k: v.median for k, v in self.meters.items()})
         with open(self.output_file, "a") as f:
             f.write(json.dumps(dict_to_dump) + "\n")
-        pass
 
     def log_every(self, iterable, print_freq, header=None, n_iterations=None, start_iteration=0):
         i = start_iteration
@@ -130,12 +129,11 @@ class MetricLogger(object):
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         s_it = total_time / n_iterations if n_iterations > 0 else 0
-        logger.info("{} Total time: {} ({:.6f} s / it)".format(header, total_time_str, s_it))
+        logger.info(f"{header} Total time: {total_time_str} ({s_it:.6f} s / it)")
 
 
 class SmoothedValue:
-    """Track a series of values and provide access to smoothed values over a
-    window or the global series average.
+    """Track a series of values and provide access to smoothed values over a window or the global series average.
     """
 
     def __init__(self, window_size=20, fmt=None):
@@ -152,9 +150,7 @@ class SmoothedValue:
         self.total += value * num
 
     def synchronize_between_processes(self):
-        """
-        Distributed synchronization of the metric
-        Warning: does not synchronize the deque!
+        """Distributed synchronization of the metric Warning: does not synchronize the deque!
         """
         if not distributed.is_enabled():
             return

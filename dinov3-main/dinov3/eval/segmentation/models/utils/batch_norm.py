@@ -7,26 +7,22 @@
 import torch
 import torch.distributed as dist
 from torch import nn
-from torch.nn import functional as F
 from torch.nn import BatchNorm2d
+from torch.nn import functional as F
 
-import dinov3.distributed as distributed
+from dinov3 import distributed
 
 
 class FrozenBatchNorm2d(nn.Module):
-    """
-    BatchNorm2d where the batch statistics and the affine parameters are fixed.
+    """BatchNorm2d where the batch statistics and the affine parameters are fixed.
 
-    It contains non-trainable buffers called
-    "weight" and "bias", "running_mean", "running_var",
-    initialized to perform identity transformation.
+    It contains non-trainable buffers called "weight" and "bias", "running_mean", "running_var", initialized to perform
+    identity transformation.
 
-    The pre-trained backbone models from Caffe2 only contain "weight" and "bias",
-    which are computed from the original four parameters of BN.
-    The affine transform `x * weight + bias` will perform the equivalent
-    computation of `(x - running_mean) / sqrt(running_var) * weight + bias`.
-    When loading a backbone model from Caffe2, "running_mean" and "running_var"
-    will be left unchanged as identity transformation.
+    The pre-trained backbone models from Caffe2 only contain "weight" and "bias", which are computed from the original
+    four parameters of BN. The affine transform `x * weight + bias` will perform the equivalent computation of `(x -
+    running_mean) / sqrt(running_var) * weight + bias`. When loading a backbone model from Caffe2, "running_mean" and
+    "running_var" will be left unchanged as identity transformation.
 
     Other pre-trained backbone models may contain all 4 parameters.
 
@@ -99,12 +95,11 @@ class FrozenBatchNorm2d(nn.Module):
         )
 
     def __repr__(self):
-        return "FrozenBatchNorm2d(num_features={}, eps={})".format(self.num_features, self.eps)
+        return f"FrozenBatchNorm2d(num_features={self.num_features}, eps={self.eps})"
 
     @classmethod
     def convert_frozen_batchnorm(cls, module):
-        """
-        Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
+        """Convert all BatchNorm/SyncBatchNorm in module into FrozenBatchNorm.
 
         Args:
             module (torch.nn.Module):
@@ -137,8 +132,7 @@ class FrozenBatchNorm2d(nn.Module):
 
     @classmethod
     def convert_frozenbatchnorm2d_to_batchnorm2d(cls, module: nn.Module) -> nn.Module:
-        """
-        Convert all FrozenBatchNorm2d to BatchNorm2d
+        """Convert all FrozenBatchNorm2d to BatchNorm2d.
 
         Args:
             module (torch.nn.Module):
@@ -149,7 +143,6 @@ class FrozenBatchNorm2d(nn.Module):
 
         This is needed for quantization.
         """
-
         res = module
         if isinstance(module, FrozenBatchNorm2d):
             res = torch.nn.BatchNorm2d(module.num_features, module.eps)
@@ -171,9 +164,8 @@ class FrozenBatchNorm2d(nn.Module):
 def get_norm(norm, out_channels):
     """
     Args:
-        norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
-            or a callable that takes a channel number and returns
-            the normalization layer as a nn.Module.
+        norm (str or callable): either one of BN, SyncBN, FrozenBN, GN; or a callable that takes a channel number and
+            returns the normalization layer as a nn.Module.
 
     Returns:
         nn.Module or None: the normalization layer
@@ -200,14 +192,12 @@ def get_norm(norm, out_channels):
 
 
 class NaiveSyncBatchNorm(BatchNorm2d):
-    """
-    In PyTorch<=1.5, ``nn.SyncBatchNorm`` has incorrect gradient
-    when the batch size on each worker is different.
+    """In PyTorch<=1.5, ``nn.SyncBatchNorm`` has incorrect gradient when the batch size on each worker is different.
     (e.g., when scale augmentation is used, or when it is applied to mask head).
 
     This is a slower but correct alternative to `nn.SyncBatchNorm`.
 
-    Note:
+    Notes:
         There isn't a single definition of Sync BatchNorm.
 
         When ``stats_mode==""``, this module computes overall statistics by using
@@ -221,7 +211,7 @@ class NaiveSyncBatchNorm(BatchNorm2d):
         have the same (H, W). It is slower than ``stats_mode==""``.
 
         Even though the result of this module may not be the true statistics of all samples,
-        it may still be reasonable because it might be preferrable to assign equal weights
+        it may still be reasonable because it might be preferable to assign equal weights
         to all workers, regardless of their (H, W) dimension, instead of putting larger weight
         on larger images. From preliminary experiments, little difference is found between such
         a simplified implementation and an accurate computation of overall mean & variance.
@@ -286,19 +276,15 @@ class NaiveSyncBatchNorm(BatchNorm2d):
 
 
 class CycleBatchNormList(nn.ModuleList):
-    """
-    Implement domain-specific BatchNorm by cycling.
+    """Implement domain-specific BatchNorm by cycling.
 
-    When a BatchNorm layer is used for multiple input domains or input
-    features, it might need to maintain a separate test-time statistics
-    for each domain. See Sec 5.2 in :paper:`rethinking-batchnorm`.
+    When a BatchNorm layer is used for multiple input domains or input features, it might need to maintain a separate
+    test-time statistics for each domain. See Sec 5.2 in :paper:`rethinking-batchnorm`.
 
-    This module implements it by using N separate BN layers
-    and it cycles through them every time a forward() is called.
+    This module implements it by using N separate BN layers and it cycles through them every time a forward() is called.
 
-    NOTE: The caller of this module MUST guarantee to always call
-    this module by multiple of N times. Otherwise its test-time statistics
-    will be incorrect.
+    NOTE: The caller of this module MUST guarantee to always call this module by multiple of N times. Otherwise its
+    test-time statistics will be incorrect.
     """
 
     def __init__(self, length: int, bn_class=nn.BatchNorm2d, **kwargs):
@@ -333,11 +319,10 @@ class CycleBatchNormList(nn.ModuleList):
 
 
 class LayerNorm(nn.Module):
-    """
-    A LayerNorm variant, popularized by Transformers, that performs point-wise mean and
-    variance normalization over the channel dimension for inputs that have shape
-    (batch_size, channels, height, width).
-    https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119  # noqa B950
+    """A LayerNorm variant, popularized by Transformers, that performs point-wise mean and variance normalization over
+    the channel dimension for inputs that have shape (batch_size, channels, height, width).
+    https://github.com/facebookresearch/ConvNeXt/blob/d1fa8f6fef0a165b27399986cc2bdacc92777e40/models/convnext.py#L119
+    # noqa B950.
     """
 
     def __init__(self, normalized_shape, eps=1e-6):

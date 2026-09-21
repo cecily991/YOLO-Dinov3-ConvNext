@@ -1,7 +1,7 @@
-train_dataset_str: <DATSET_PATH> #Example: CocoCaptions:split=TRAIN:root=<PATH/TO/COCO_CAPTIONS_ROOT> 
+train_dataset_str: <DATSET_PATH> #Example: CocoCaptions:split=TRAIN:root=<PATH/TO/COCO_CAPTIONS_ROOT>
 embed_dim: 2048
-vision_backbone_config: <PATH/TO/DINOv3/VIT-L/16/CONFIG> #Example: <DINOv3_REPO_DIR>/dinov3/configs/train/dinov3_vitl16_lvd1689m_distilled.yaml 
-vision_backbone_pretrained_weights: <PATH/TO/DINOv3/VIT-L/16/CHECKPOINT> #Example ~/.cache/torch/hub/checkpoints/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth #Example: 
+vision_backbone_config: <PATH/TO/DINOv3/VIT-L/16/CONFIG> #Example: <DINOv3_REPO_DIR>/dinov3/configs/train/dinov3_vitl16_lvd1689m_distilled.yaml
+vision_backbone_pretrained_weights: <PATH/TO/DINOv3/VIT-L/16/CHECKPOINT> #Example ~/.cache/torch/hub/checkpoints/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth #Example:
 vision_model_train_img_size: 224
 vision_model_use_class_token: true
 vision_model_freeze_backbone: true
@@ -15,8 +15,8 @@ vision_model_use_gram_loss: false
 vision_model_patch_sampling_rate_for_gram_loss: 1.0
 vision_model_normalize_patch_tokens_for_gram_loss: true
 vision_model_gram_loss_weight: 1.0
-text_backbone_config: <PATH/TO/DINOv3/VIT-L/16/CHECKPOINT> #Example: <DINOv3_REPO_DIR>/dinov3/eval/text/configs/text_backbone.yaml 
-text_backbone_pretrained_weights: null  
+text_backbone_config: <PATH/TO/DINOv3/VIT-L/16/CHECKPOINT> #Example: <DINOv3_REPO_DIR>/dinov3/eval/text/configs/text_backbone.yaml
+text_backbone_pretrained_weights: null
 text_model_freeze_backbone: false
 text_model_num_head_blocks: 0
 text_model_head_blocks_drop_prob: 0.0
@@ -44,8 +44,8 @@ warmup_length: 2000
 checkpointing_period: 500
 eval_freq: 5000
 gc_freq: 100
-eval_pretrained_weights: ''
-output_dir: <OUTPUT/DIR> #Example: ~/tmp/dinov3_dinnotxt_vitl16 
+eval_pretrained_weights: ""
+output_dir: <OUTPUT/DIR> #Example: ~/tmp/dinov3_dinnotxt_vitl16
 seed: 11
 do_compile: true
 use_fsdp: true
