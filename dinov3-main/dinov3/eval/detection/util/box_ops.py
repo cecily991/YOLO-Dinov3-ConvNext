@@ -16,9 +16,8 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------
 
-"""
-Utilities for bounding box manipulation and GIoU.
-"""
+"""Utilities for bounding box manipulation and GIoU."""
+
 import numpy as np
 import torch
 
