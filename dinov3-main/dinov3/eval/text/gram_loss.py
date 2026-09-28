@@ -13,7 +13,7 @@ def gram_loss_fn(
     patch_sampling_rate: float = 1.0,
     normalize: bool = True,
 ) -> torch.Tensor:
-    num_patches, dim = patch_tokens.shape[1:]
+    num_patches, _dim = patch_tokens.shape[1:]
     idx = torch.randperm(num_patches)[: int(num_patches * patch_sampling_rate)]
     patch_tokens = patch_tokens[:, idx, :]
     backbone_patch_tokens = backbone_patch_tokens[:, idx, :]

@@ -14,7 +14,7 @@ from dinov3.data.transforms import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, 
 logger = logging.getLogger("dinov3")
 
 
-class DataAugmentationDINO(object):
+class DataAugmentationDINO:
     def __init__(
         self,
         global_crops_scale,
