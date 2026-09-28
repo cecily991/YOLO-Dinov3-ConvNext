@@ -10,7 +10,6 @@ import torch
 from dinov3.eval.segmentation.models.backbone.dinov3_adapter import DINOv3_Adapter
 from dinov3.eval.segmentation.models.heads.mask2former_head import Mask2FormerHead
 
-
 BACKBONE_INTERMEDIATE_LAYERS = {
     "dinov3_vits16": [2, 5, 8, 11],
     "dinov3_vitb16": [2, 5, 8, 11],
@@ -32,10 +31,9 @@ class FeatureDecoder(torch.nn.Module):
         return inputs
 
     def predict(self, inputs, rescale_to=(512, 512)):
-        with torch.inference_mode():
-            with self.autocast_ctx():
-                out = self.segmentation_model[0](inputs)  # backbone forward
-                out = self.segmentation_model[1].predict(out, rescale_to=rescale_to)  # decoder head prediction
+        with torch.inference_mode(), self.autocast_ctx():
+            out = self.segmentation_model[0](inputs)  # backbone forward
+            out = self.segmentation_model[1].predict(out, rescale_to=rescale_to)  # decoder head prediction
         return out
 
 
