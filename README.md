@@ -2,8 +2,6 @@
 
 This is a code repository for a model that replaces the Backbone of the YOLOv11 model with the DINOv3-ConvNext model ( [facebookresearch/dinov3: Reference PyTorch implementation and models for DINOv3](https://github.com/facebookresearch/dinov3) ).
 
-
-
 ##### Environment Preparation
 
 ```
@@ -13,8 +11,6 @@ conda install pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=
 pip install ultralytics
 ```
 
-
-
 ##### Usability Testing
 
 ```python
@@ -22,8 +18,6 @@ python verify_model.py
 ```
 
 After the usability test is passed, the training logic of the YOLO model can be reused to train on a custom dataset, where the model structure configuration file is `configs/yolo11-dinov3.yaml`.
-
-
 
 ##### Modify DINOv3 Model Size
 
