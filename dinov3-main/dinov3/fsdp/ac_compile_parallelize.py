@@ -3,13 +3,15 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import logging
 from functools import partial
-from typing import Any, List, Optional
+from typing import Any
 
 import torch
 import torch.distributed as dist
-import torch.nn as nn
+from torch import nn
 from torch.distributed._composable.fsdp import MixedPrecisionPolicy, fully_shard
 from torch.distributed.device_mesh import DeviceMesh, init_device_mesh
 from torch.distributed.fsdp import register_fsdp_forward_method
@@ -24,7 +26,7 @@ logger = logging.getLogger("dinov3")
 def map_modules_and_blocks(models: list[nn.ModuleDict], callable) -> None:
     for m in models:
         assert isinstance(m, nn.ModuleDict)
-        for k in m.keys():
+        for k in m:
             if k == "backbone":
                 assert isinstance(m[k].blocks, nn.ModuleList)
                 for block_id, block in enumerate(m[k].blocks):
@@ -35,20 +37,16 @@ def map_modules_and_blocks(models: list[nn.ModuleDict], callable) -> None:
 
 def ac_compile_parallelize(
     trained_model: nn.ModuleDict,
-    inference_only_models: List[nn.ModuleDict],
+    inference_only_models: list[nn.ModuleDict],
     cfg: Any,
-    trained_model_process_group: Optional[dist.ProcessGroup] = None,
-    inference_only_models_process_groups: Optional[List[dist.ProcessGroup]] = None,
+    trained_model_process_group: dist.ProcessGroup | None = None,
+    inference_only_models_process_groups: list[dist.ProcessGroup] | None = None,
 ) -> None:
+    """Order of the wrappers: 1/ Activation checkpointing on blocks 2/ Compile blocks 3/ FSDP blocks + global model.
     """
-    Order of the wrappers:
-    1/ Activation checkpointing on blocks
-    2/ Compile blocks
-    3/ FSDP blocks + global model
-    """
-    assert (
-        isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model.keys()
-    ), f"{trained_model} does not contain a backbone?"
+    assert isinstance(trained_model, nn.ModuleDict) and "backbone" in trained_model, (
+        f"{trained_model} does not contain a backbone?"
+    )
     logger.info("DISTRIBUTED FSDP -- preparing model for distributed training")
     if utils.has_batchnorms(trained_model):
         raise NotImplementedError
@@ -81,15 +79,15 @@ def ac_compile_parallelize(
             backbone.blocks[i] = _checkpointing_wrapper(b)
 
     # 2/ Compile blocks
-    all_models = [trained_model] + inference_only_models
+    all_models = [trained_model, *inference_only_models]
     if trained_model_process_group is None and inference_only_models_process_groups is None:
         all_pgs = [None] * len(all_models)
     elif trained_model_process_group is None:
-        all_pgs = [None] + inference_only_models_process_groups
+        all_pgs = [None, *inference_only_models_process_groups]
     elif inference_only_models_process_groups is None:
         all_pgs = [trained_model_process_group] + [None] * len(inference_only_models_process_groups)
     else:
-        all_pgs = [trained_model_process_group] + inference_only_models_process_groups
+        all_pgs = [trained_model_process_group, *inference_only_models_process_groups]
 
     def wrap_compile_block(m: nn.Module, is_backbone_block: bool) -> nn.Module:
         if cfg.train.compile:
@@ -127,7 +125,7 @@ def ac_compile_parallelize(
         else:
             world_mesh = DeviceMesh.from_group(pg, "cuda")
         fsdp_config = {"mesh": world_mesh, "mp_policy": mp_policy}
-        for k in m.keys():
+        for k in m:
             if k != "backbone":
                 m[k] = fully_shard(m[k], **fsdp_config, reshard_after_forward=True)
                 m[k].set_reduce_scatter_divide_factor(1)
@@ -156,7 +154,7 @@ def ac_compile_parallelize(
 
     # 5/ FSDP2: Reshard immediately after forward for inference-only models
     for model in inference_only_models:
-        for k in model.keys():
+        for k in model:
             fsdp_state: FSDPState = model[k]._get_fsdp_state()
             if not fsdp_state._fsdp_param_group:
                 continue

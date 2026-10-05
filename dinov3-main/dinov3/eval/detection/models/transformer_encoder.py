@@ -13,7 +13,8 @@ Copy-paste from torch.nn.Transformer with modifications:
     * extra LN at the end of encoder is removed
     * decoder returns a stack of activations from all decoding layers
 """
-from typing import Optional
+
+from __future__ import annotations
 
 from torch import Tensor, nn
 
@@ -30,9 +31,9 @@ class TransformerEncoder(nn.Module):
     def forward(
         self,
         src,
-        mask: Optional[Tensor] = None,
-        src_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
+        mask: Tensor | None = None,
+        src_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
     ):
         output = src
 
@@ -63,15 +64,15 @@ class TransformerEncoderLayer(nn.Module):
         self.activation = _get_activation_fn(activation)
         self.normalize_before = normalize_before
 
-    def with_pos_embed(self, tensor, pos: Optional[Tensor]):
+    def with_pos_embed(self, tensor, pos: Tensor | None):
         return tensor if pos is None else tensor + pos
 
     def forward_post(
         self,
         src,
-        src_mask: Optional[Tensor] = None,
-        src_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
+        src_mask: Tensor | None = None,
+        src_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
     ):
         q = k = self.with_pos_embed(src, pos)
         src2 = self.self_attn(
@@ -87,9 +88,9 @@ class TransformerEncoderLayer(nn.Module):
     def forward_pre(
         self,
         src,
-        src_mask: Optional[Tensor] = None,
-        src_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
+        src_mask: Tensor | None = None,
+        src_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
     ):
         src2 = self.norm1(src)
         q = k = self.with_pos_embed(src2, pos)
@@ -105,9 +106,9 @@ class TransformerEncoderLayer(nn.Module):
     def forward(
         self,
         src,
-        src_mask: Optional[Tensor] = None,
-        src_key_padding_mask: Optional[Tensor] = None,
-        pos: Optional[Tensor] = None,
+        src_mask: Tensor | None = None,
+        src_key_padding_mask: Tensor | None = None,
+        pos: Tensor | None = None,
     ):
         if self.normalize_before:
             return self.forward_pre(src, src_mask, src_key_padding_mask, pos)

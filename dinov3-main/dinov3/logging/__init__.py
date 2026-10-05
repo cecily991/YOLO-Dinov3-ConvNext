@@ -3,6 +3,8 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
+from __future__ import annotations
+
 import functools
 import logging
 import os
@@ -12,7 +14,6 @@ from typing import Optional
 from termcolor import colored
 
 from dinov3.distributed import TorchDistributedEnvironment
-
 from dinov3.logging.helpers import MetricLogger, SmoothedValue
 
 _LEVEL_COLORED_KWARGS = {
@@ -47,34 +48,31 @@ class _LevelColoredFormatter(logging.Formatter):
 
 
 # So that calling _configure_logger multiple times won't add many handlers
-@functools.lru_cache()
+@functools.lru_cache
 def _configure_logger(
-    name: Optional[str] = None,
+    name: str | None = None,
     *,
     level: int = logging.DEBUG,
-    output: Optional[str] = None,
+    output: str | None = None,
     color: bool = True,
     log_to_stdout_only_in_main_process: bool = True,
 ):
-    """
-    Configure a logger.
+    """Configure a logger.
 
     Adapted from Detectron2.
 
     Args:
         name: The name of the logger to configure.
         level: The logging level to use.
-        output: A file name or a directory to save log. If None, will not save log file.
-            If ends with ".txt" or ".log", assumed to be a file name.
-            Otherwise, logs will be saved to `output/log.txt`.
+        output: A file name or a directory to save log. If None, will not save log file. If ends with ".txt" or ".log",
+            assumed to be a file name. Otherwise, logs will be saved to `output/log.txt`.
         color: Whether stdout output should be colored (ignored if stdout is not a terminal).
-        log_to_stdout_only_in_main_process: The main process (rank 0) always logs to stdout,
-            regardless of this flag. If False, other ranks will also log to their stdout.
+        log_to_stdout_only_in_main_process: The main process (rank 0) always logs to stdout, regardless of this flag. If
+            False, other ranks will also log to their stdout.
 
     Returns:
         The configured logger.
     """
-
     # Disable colored output if the stdout is not a terminal
     color = color and os.isatty(sys.stdout.fileno())
 
@@ -134,28 +132,25 @@ def _configure_logger(
 
 
 def setup_logging(
-    output: Optional[str] = None,
+    output: str | None = None,
     *,
-    name: Optional[str] = None,
+    name: str | None = None,
     level: int = logging.DEBUG,
     color: bool = True,
     capture_warnings: bool = True,
     log_to_stdout_only_in_main_process: bool = True,
 ) -> None:
-    """
-    Setup logging.
+    """Setup logging.
 
     Args:
-        output: A file name or a directory to save log files. If None, log
-            files will not be saved. If output ends with ".txt" or ".log", it
-            is assumed to be a file name.
-            Otherwise, logs will be saved to `output/log.txt`.
+        output: A file name or a directory to save log files. If None, log files will not be saved. If output ends with
+            ".txt" or ".log", it is assumed to be a file name. Otherwise, logs will be saved to `output/log.txt`.
         name: The name of the logger to configure, by default the root logger.
         level: The logging level to use.
         color: Whether stdout output should be colored (ignored if stdout is not a terminal).
         capture_warnings: Whether warnings should be captured as logs.
-        log_to_stdout_only_in_main_process: The main process (rank 0) always logs to stdout,
-            regardless of this flag. If False, other ranks will also log to their stdout.
+        log_to_stdout_only_in_main_process: The main process (rank 0) always logs to stdout, regardless of this flag. If
+            False, other ranks will also log to their stdout.
     """
     logging.captureWarnings(capture_warnings)
     # Ensure the path is canonical to properly use the cache of `_configure_logger`
@@ -169,7 +164,7 @@ def setup_logging(
     )
 
 
-def cleanup_logging(*, name: Optional[str] = None) -> None:
+def cleanup_logging(*, name: str | None = None) -> None:
     logger = logging.getLogger(name)
     for handler in logger.handlers:
         handler.flush()

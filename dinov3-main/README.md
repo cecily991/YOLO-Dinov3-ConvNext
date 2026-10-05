@@ -20,7 +20,7 @@ Reference PyTorch implementation and models for DINOv3. For details, see the **[
 <div align="center">
   <img width="1364" height="1024" alt="market" src="https://github.com/user-attachments/assets/1411f491-988e-49cb-95ae-d03fe6e3c268" />
 
-  <i></em><b>High-resolution dense features.</b><br/>We visualize the cosine similarity maps obtained with DINOv3 output features<br/> between the patches marked with a red cross and all other patches.</i>
+<i></em><b>High-resolution dense features.</b><br/>We visualize the cosine similarity maps obtained with DINOv3 output features<br/> between the patches marked with a red cross and all other patches.</i>
 </div>
 
 <br/>
@@ -30,6 +30,7 @@ An extended family of versatile vision foundation models producing high-quality 
 ## Pretrained models
 
 :information_source: Please follow the link provided below to get access to all the model weights: once accepted, an e-mail will be sent with the complete list of URLs pointing to all the available model weights (both backbones and adapters). These URLs can then be used to either:
+
 - download the model or adapter weights to a local filesystem and point `torch.hub.load()` to these local weights via the `weights` or `backbone_weights` parameters, or
 - directly invoke `torch.hub.load()` to download and load a backbone or an adapter from its URL via also the `weights` or `backbone_weights` parameters.
 
@@ -151,7 +152,6 @@ ViT models pretrained on satellite dataset (SAT-493M):
   </tbody>
 </table>
 
-
 ### Pretrained backbones (via PyTorch [Hub](https://docs.pytorch.org/docs/stable/hub.html))
 
 Please follow the instructions [here](https://pytorch.org/get-started/locally/) to install PyTorch (the only required dependency for loading the model). Installing PyTorch with CUDA support is strongly recommended.
@@ -193,7 +193,7 @@ image = load_image(url)
 
 feature_extractor = pipeline(
     model="facebook/dinov3-convnext-tiny-pretrain-lvd1689m",
-    task="image-feature-extraction", 
+    task="image-feature-extraction",
 )
 features = feature_extractor(image)
 ```
@@ -209,8 +209,8 @@ image = load_image(url)
 pretrained_model_name = "facebook/dinov3-convnext-tiny-pretrain-lvd1689m"
 processor = AutoImageProcessor.from_pretrained(pretrained_model_name)
 model = AutoModel.from_pretrained(
-    pretrained_model_name, 
-    device_map="auto", 
+    pretrained_model_name,
+    device_map="auto",
 )
 
 inputs = processor(images=image, return_tensors="pt").to(model.device)
@@ -222,6 +222,7 @@ print("Pooled output shape:", pooled_output.shape)
 ```
 
 where `model` and `pretrained_model_name` above can be one of:
+
 - `facebook/dinov3-vits16-pretrain-lvd1689m`
 - `facebook/dinov3-vits16plus-pretrain-lvd1689m`
 - `facebook/dinov3-vitb16-pretrain-lvd1689m`
@@ -240,7 +241,7 @@ where `model` and `pretrained_model_name` above can be one of:
 For models using the LVD-1689M weights (pretrained on web images), please use the following transform (standard ImageNet evaluation transform):
 
 ```python
-import torchvision
+
 
 def make_transform(resize_size: int = 224):
     to_tensor = transforms.ToTensor()
@@ -252,12 +253,10 @@ def make_transform(resize_size: int = 224):
     return transforms.Compose([to_tensor, resize, normalize])
 ```
 
-
 For models using the SAT-493M weights (pretrained on satellite imagery), please use the following transform:
 
-
 ```python
-import torchvision
+
 
 def make_transform(resize_size: int = 224):
     to_tensor = transforms.ToTensor()
@@ -290,7 +289,6 @@ def make_transform(resize_size: int = 224):
   </tbody>
 </table>
 
-
 The (full) classifier models can be loaded via PyTorch Hub:
 
 ```python
@@ -298,7 +296,6 @@ import torch
 
 # DINOv3
 dinov3_vit7b16_lc = torch.hub.load(REPO_DIR, 'dinov3_vit7b16_lc', source="local", weights=<DEPTHER/CHECKPOINT/URL/OR/PATH>, backbone_weights=<BACKBONE/CHECKPOINT/URL/OR/PATH>)
-
 ```
 
 ### Pretrained heads - Depther trained on SYNTHMIX dataset
@@ -321,7 +318,6 @@ dinov3_vit7b16_lc = torch.hub.load(REPO_DIR, 'dinov3_vit7b16_lc', source="local"
     </tr>
   </tbody>
 </table>
-
 
 ```python
 depther = torch.hub.load(REPO_DIR, 'dinov3_vit7b16_dd', source="local", weights=<DEPTHER/CHECKPOINT/URL/OR/PATH>, backbone_weights=<BACKBONE/CHECKPOINT/URL/OR/PATH>)
@@ -369,7 +365,6 @@ plt.axis("off")
 plt.subplot(122)
 plt.imshow(depths[0,0].cpu(), cmap=colormaps["Spectral"])
 plt.axis("off")
-
 ```
 
 ### Pretrained heads - Detector trained on COCO2017 dataset
@@ -392,7 +387,6 @@ plt.axis("off")
     </tr>
   </tbody>
 </table>
-
 
 ```python
 detector = torch.hub.load(REPO_DIR, 'dinov3_vit7b16_de', source="local", weights=<DETECTOR/CHECKPOINT/URL/OR/PATH>, backbone_weights=<BACKBONE/CHECKPOINT/URL/OR/PATH>)
@@ -461,7 +455,7 @@ transform = make_transform(img_size)
 with torch.inference_mode():
     with torch.autocast('cuda', dtype=torch.bfloat16):
         batch_img = transform(img)[None]
-        pred_vit7b = segmentor(batch_img)  # raw predictions  
+        pred_vit7b = segmentor(batch_img)  # raw predictions
         # actual segmentation map
         segmentation_map_vit7b = make_inference(
             batch_img,
@@ -482,9 +476,6 @@ plt.subplot(122)
 plt.imshow(segmentation_map_vit7b[0,0].cpu(), cmap=colormaps["Spectral"])
 plt.axis("off")
 ```
-
-
-
 
 ### Pretrained heads - Zero-shot tasks with `dino.txt`
 
@@ -515,12 +506,11 @@ import torch
 dinov3_vitl16_dinotxt_tet1280d20h24l, tokenizer = torch.hub.load(REPO_DIR, 'dinov3_vitl16_dinotxt_tet1280d20h24l', weights=<SEGMENTOR/CHECKPOINT/URL/OR/PATH>, backbone_weights=<BACKBONE/CHECKPOINT/URL/OR/PATH>)
 ```
 
-
 ## Installation
 
 The training and evaluation code requires PyTorch version >= 2.7.1 as well as a few other 3rd party packages. Note that the code has only been tested with the specified versions and also expects a Linux environment. To setup all the required dependencies for training and evaluation, please follow the instructions below:
 
-*[micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)* **(Recommended)** - Clone the repository and then create and activate a `dinov3` conda environment using the provided environment definition:
+_[micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)_ **(Recommended)** - Clone the repository and then create and activate a `dinov3` conda environment using the provided environment definition:
 
 ```shell
 micromamba env create -f conda.yaml
@@ -530,6 +520,7 @@ micromamba activate dinov3
 ## Getting started
 
 Several notebooks are provided to get started applying DINOv3:
+
 - [PCA of patch features](notebooks/pca.ipynb): display the PCA of DINOv3 patch features on a foreground object (rainbow visualizations from the paper) [[Run in Google Colab]](https://colab.research.google.com/github/facebookresearch/dinov3/blob/main/notebooks/pca.ipynb)
 - [Foreground segmentation](notebooks/foreground_segmentation.ipynb): train a linear foreground segmentation model based on DINOv3 features [[Run in Google Colab]](https://colab.research.google.com/github/facebookresearch/dinov3/blob/main/notebooks/foreground_segmentation.ipynb)
 - [Dense and sparse matching](notebooks/dense_sparse_matching.ipynb): match patches from objects on two different images based on DINOv3 features [[Run in Google Colab]](https://colab.research.google.com/github/facebookresearch/dinov3/blob/main/notebooks/dense_sparse_matching.ipynb)
@@ -595,6 +586,7 @@ Run DINOv3 pre-training on 4 H100-80GB nodes (32 GPUs) in a SLURM cluster enviro
   --output-dir <PATH/TO/OUTPUT/DIR> \
   train.dataset_path=ImageNet22k:root=<PATH/TO/DATASET>:extra=<PATH/TO/DATASET>
 ```
+
 Training time is approximately 14 hours and the resulting checkpoint should reach 82.0% on k-NN eval and 83.5% on linear eval.
 
 The training code saves the weights of the teacher in the eval folder every 12500 iterations for evaluation.
@@ -602,6 +594,7 @@ The training code saves the weights of the teacher in the eval folder every 1250
 ### Exact DINOv3 setup: training DINOv3 ViT-7B/16
 
 DINOv3 ViT-7B/16 is trained on a private dataset. The training involves 3 stages:
+
 - Pretraining
 - Gram anchoring
 - High resolution adaptation
@@ -626,11 +619,10 @@ PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/train/train.py \
   --config-file dinov3/configs/train/dinov3_vit7b16_gram_anchor.yaml \
   --output-dir <PATH/TO/OUTPUT/DIR> \
   train.dataset_path=<DATASET>:root=<PATH/TO/DATASET>:extra=<PATH/TO/DATASET> \
-  gram.ckpt=<PATH/TO/GRAM_TEACHER_FROM_PREVIOUS_STEP>   
+  gram.ckpt=<PATH/TO/GRAM_TEACHER_FROM_PREVIOUS_STEP>
 ```
 
 #### High-resolution adaptation
-
 
 ```shell
 PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/train/train.py \
@@ -642,7 +634,7 @@ PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/train/train.py \
   student.resume_from_teacher_chkpt=<PATH/TO/TEACHER_FROM_GRAM>
 ```
 
-## Multi-distillation 
+## Multi-distillation
 
 ### Test setup:
 
@@ -658,7 +650,6 @@ PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/train/train.py \
 ## Evaluation
 
 The training code regularly saves the teacher weights. In order to evaluate the model, run the following evaluation on a single node:
-
 
 ### Logistic regression classification on ImageNet-1k
 
@@ -693,7 +684,6 @@ PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/eval/linear.py \
   train.val_dataset=ImageNet:split=VAL:root=<PATH/TO/DATASET>:extra=<PATH/TO/DATASET>
 ```
 
-
 ### Text alignment on DINOv3 using dino.txt
 
 Text alignment can be done following the method from `dino.txt` aka [DINOv2 Meets Text](https://arxiv.org/abs/2412.16334).
@@ -701,13 +691,14 @@ Text alignment can be done following the method from `dino.txt` aka [DINOv2 Meet
 ```shell
 PYTHONPATH=${PWD} python -m dinov3.run.submit dinov3/eval/text/train_dinotxt.py \
    --nodes 4 \
-  # An example config for text alignment is here: dinov3/eval/text/configs/dinov3_vitl_text.yaml \ 
+  # An example config for text alignment is here: dinov3/eval/text/configs/dinov3_vitl_text.yaml \
   trainer_config_file="<PATH/TO/DINOv3/TEXT/CONFIG>" \
   output-dir=<PATH/TO/OUTPUT/DIR>
 ```
+
 Launching the above trains text alignment on 4 nodes with 8 gpus each (32 gpus in total).
-Please note that the text alignment model in the DINOv3 paper was trained on a private dataset and here we have given an example config in ```dinov3/eval/text/configs/dinov3_vitl_text.yaml``` using ```CocoCaptions``` dataset for illustration purposes.
-Please adapt the provided ```CocoCaptions``` dataset class, the dataset can be found [here](https://www.kaggle.com/datasets/nikhil7280/coco-image-caption)  
+Please note that the text alignment model in the DINOv3 paper was trained on a private dataset and here we have given an example config in `dinov3/eval/text/configs/dinov3_vitl_text.yaml` using `CocoCaptions` dataset for illustration purposes.
+Please adapt the provided `CocoCaptions` dataset class, the dataset can be found [here](https://www.kaggle.com/datasets/nikhil7280/coco-image-caption)
 
 ## License
 

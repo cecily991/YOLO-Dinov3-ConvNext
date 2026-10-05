@@ -182,7 +182,7 @@ video_path = "path/to/video.mp4"
 cap = cv2.VideoCapture(video_path)
 
 # Store the track history
-track_history = defaultdict(lambda: [])
+track_history = defaultdict(list)
 
 # Loop through the video frames
 while cap.isOpened():
@@ -256,8 +256,7 @@ SOURCES = ["path/to/video.mp4", "0"]  # local video, 0 for webcam
 
 
 def run_tracker_in_thread(model_name, filename):
-    """
-    Run YOLO tracker in its own thread for concurrent processing.
+    """Run YOLO tracker in its own thread for concurrent processing.
 
     Args:
         model_name (str): The YOLO11 model object.

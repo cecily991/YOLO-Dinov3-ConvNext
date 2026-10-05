@@ -16,12 +16,13 @@ def get_vit_lr_decay_rate(
     force_is_backbone=False,
     chunked_blocks=False,
 ):
-    """
-    Calculate lr decay rate for different ViT blocks.
+    """Calculate lr decay rate for different ViT blocks.
+
     Args:
         name (string): parameter name.
         lr_decay_rate (float): base lr decay rate.
         num_layers (int): number of ViT blocks.
+
     Returns:
         lr decay rate for the given parameter.
     """
@@ -33,14 +34,15 @@ def get_vit_lr_decay_rate(
             or ".mask_token" in name
             or ".cls_token" in name
             or ".storage_tokens" in name
-        ):
-            layer_id = 0
-        elif force_is_backbone and (
-            "pos_embed" in name
-            or "patch_embed" in name
-            or "mask_token" in name
-            or "cls_token" in name
-            or "storage_tokens" in name
+        ) or (
+            force_is_backbone
+            and (
+                "pos_embed" in name
+                or "patch_embed" in name
+                or "mask_token" in name
+                or "cls_token" in name
+                or "storage_tokens" in name
+            )
         ):
             layer_id = 0
         elif ".blocks." in name and ".residual." not in name:

@@ -350,8 +350,8 @@ async def predict(request: PredictionRequest):
         # Re-raise HTTPException as-is (don't catch and convert to 500)
         raise
     except Exception as e:
-        logger.error(f"Prediction error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.error(f"Prediction error: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e!s}")
 ```
 
 Finally, add the application entry point to run the FastAPI server.
@@ -514,6 +514,7 @@ For more specific instructions on how to work with images in Artifact Registry, 
 Using the Docker image you've just pushed, you can now import the model in Vertex AI.
 
 1. In Google Cloud navigation menu, go to Vertex AI > Model Registry. Alternatively, search for "Vertex AI" in the search bar at the top of the Google Cloud Console.
+
  <p align="center">
    <img width="80%" src="https://github.com/lussebullar/temp-image-storage/releases/download/docs/vertex-ai-import.png" alt="Vertex AI Model Registry interface with Import button highlighted for importing a new model">
  </p>
@@ -540,6 +541,7 @@ Using the Docker image you've just pushed, you can now import the model in Verte
 To deploy a model, you need to create an Endpoint in Vertex AI.
 
 1.  In your Vertex AI navigation menu, go to Endpoints. Select your region you used when importing your model. Click Create.
+
 <p align="center">
   <img width="60%" src="https://github.com/lussebullar/temp-image-storage/releases/download/docs/endpoint-name.png" alt="Vertex AI create endpoint interface showing endpoint name input field and access configuration options">
 </p>
