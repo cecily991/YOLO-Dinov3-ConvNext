@@ -1,5 +1,5 @@
 paths:
-    - dinov3
+  - dinov3
 exclude: dinov3/tests
 skip_init: True
 skip_private: True

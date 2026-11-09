@@ -13,17 +13,14 @@ from torch import nn
 from dinov3.distributed import get_process_subgroup, get_subgroup_size
 
 
-def lossfunc(t, s, temp):  # noqa: F811
+def lossfunc(t, s, temp):
     return torch.sum(t.float() * F.log_softmax(s.float() / temp, dim=-1), dim=-1)
 
 
 class SinkhornKnoppTeacher(nn.Module):
-    """
-    NOTE: This is a module and not a function in the `iBOTPatchLoss` class
-    This is because we want to torch.compile it, and torch.compil-ing a single
-    function with the `@torch.compile` decorator is bad.
-    It's better to `module.compile()` it, as we can control when we enable or
-    disable compilation globally.
+    """NOTE: This is a module and not a function in the `iBOTPatchLoss` class This is because we want to torch.compile
+    it, and torch.compil-ing a single function with the `@torch.compile` decorator is bad. It's better to
+    `module.compile()` it, as we can control when we enable or disable compilation globally.
     """
 
     @torch.no_grad()
@@ -54,7 +51,7 @@ class SinkhornKnoppTeacher(nn.Module):
             Q /= torch.sum(Q, dim=0, keepdim=True)
             Q /= B
 
-        Q *= B  # the colomns must sum to 1 so that Q is an assignment
+        Q *= B  # the columns must sum to 1 so that Q is an assignment
         return Q.t()
 
 
@@ -81,11 +78,8 @@ class iBOTPatchLoss(nn.Module):
         return F.softmax((teacher_patch_tokens - self.center) / teacher_temp, dim=-1)
 
     def forward(self, student_patch_tokens, teacher_patch_tokens, student_masks_flat):
-        """
-        Cross-entropy between softmax outputs of the teacher and student networks.
-        student_patch_tokens: (B, N, D) tensor
-        teacher_patch_tokens: (B, N, D) tensor
-        student_masks_flat: (B, N) tensor
+        """Cross-entropy between softmax outputs of the teacher and student networks. student_patch_tokens: (B, N, D)
+        tensor teacher_patch_tokens: (B, N, D) tensor student_masks_flat: (B, N) tensor.
         """
         t = teacher_patch_tokens
         s = student_patch_tokens

@@ -3,7 +3,9 @@
 # This software may be used and distributed in accordance with
 # the terms of the DINOv3 License Agreement.
 
-from typing import Dict, Union
+from __future__ import annotations
+
+from typing import Union
 
 import numpy as np
 import torch
@@ -11,7 +13,7 @@ import torch
 TypeSpec = Union[str, np.dtype, torch.dtype]
 
 
-_NUMPY_TO_TORCH_DTYPE: Dict[np.dtype, torch.dtype] = {
+_NUMPY_TO_TORCH_DTYPE: dict[np.dtype, torch.dtype] = {
     np.dtype("bool"): torch.bool,
     np.dtype("uint8"): torch.uint8,
     np.dtype("int8"): torch.int8,
