@@ -14,7 +14,6 @@ These are Vision Transformer and ConvNeXt models trained following the method de
   - 1 ViT-7B trained from scratch
   - 1 ViT-L distilled from the ViT-7B
 
-
 Each Transformer-based model takes an image as input and returns a class token, patch tokens (and register tokens). These models follow a ViT architecture, with a patch size of 16. For a 224x224 image, this results in 1 class token + 4 register tokens + 196 patch tokens = 201 tokens (for DINOv2 with registers this resulted in 1 + 4 + 256 = 261 tokens).
 
 The models can accept larger images provided the image shapes are multiples of the patch size (16). If this condition is not verified, the model will crop to the closest smaller multiple of the patch size.
@@ -42,7 +41,7 @@ The models can be used without fine-tuning, with downstream classifiers as simpl
 - on image classification, with logistic regression classifiers applied on the class token
 - on image classification, with a linear layer applied on the class token and the average of the patch tokens
 - on image retrieval using nearest neighbors
-- on geometric and semantic 3D keypoint correspondances
+- on geometric and semantic 3D keypoint correspondences
 - on depth estimation, semantic segmentation, using linear layers
 - on unsupervised object discovery
 - on video segmentation tracking
@@ -70,9 +69,9 @@ Use the code below to get started with the model.
 import torch
 
 model = torch.hub.load(
-    repo_or_dir='facebookresearch/dinov3',
-    model='<MODEL_NAME>',
-    weights='<PATH/OR/URL/TO/CHECKPOINT>',
+    repo_or_dir="facebookresearch/dinov3",
+    model="<MODEL_NAME>",
+    weights="<PATH/OR/URL/TO/CHECKPOINT>",
 )
 
 # where MODEL_NAME can be one of:
@@ -89,9 +88,9 @@ model = torch.hub.load(
 
 # For instance
 dinov3_vits16 = torch.hub.load(
-    repo_or_dir='facebookresearch/dinov3',
-    model='dinov3_vits16',
-    weights='<PATH/OR/URL/TO/DINOV3/VITS16/LVD1689M/CHECKPOINT>',
+    repo_or_dir="facebookresearch/dinov3",
+    model="dinov3_vits16",
+    weights="<PATH/OR/URL/TO/DINOV3/VITS16/LVD1689M/CHECKPOINT>",
 )
 ```
 
@@ -100,7 +99,7 @@ dinov3_vits16 = torch.hub.load(
 ### Training Data
 
 - Web dataset (LVD-1689M): a curated dataset of 1,689 millions of images extracted from a large data
-pool of 17 billions web images collected from public posts on Instagram
+  pool of 17 billions web images collected from public posts on Instagram
 
 - Satellite dataset (SAT-493M): a dataset of 493 millions of 512x512 images sampled randomly from Maxar RGB ortho-rectified imagery at 0.6 meter resolution
 
@@ -125,7 +124,7 @@ pool of 17 billions web images collected from public posts on Instagram
 
 The reader is referred to the associated paper for details on the evaluation protocols
 
-*Results for ViT backbones pretrained (or distilled) on web (LVD-1689M)*
+_Results for ViT backbones pretrained (or distilled) on web (LVD-1689M)_
 
 <table>
   <tr>
@@ -227,7 +226,7 @@ The reader is referred to the associated paper for details on the evaluation pro
   </tr>
 </table>
 
-*Results for ConvNeXt backbones distilled on web (LVD-1689M)*
+_Results for ConvNeXt backbones distilled on web (LVD-1689M)_
 
 <table>
   <tr>
@@ -299,7 +298,7 @@ The reader is referred to the associated paper for details on the evaluation pro
   </tr>
 </table>
 
-*Results for ViT backbones pretrained (or distilled) on satellite (SAT-493M)*
+_Results for ViT backbones pretrained (or distilled) on satellite (SAT-493M)_
 
 <table>
   <tr>
@@ -371,7 +370,6 @@ The reader is referred to the associated paper for details on the evaluation pro
     <td>75.0</td>
   </tr>
 </table>
-
 
 ## Environmental Impact
 

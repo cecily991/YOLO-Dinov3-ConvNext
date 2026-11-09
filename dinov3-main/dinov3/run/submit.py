@@ -155,7 +155,7 @@ class CheckpointableSubmitter:
         logger.info(f"Process group: {job_env.num_tasks} tasks, rank: {job_env.global_rank}")
         logger.info(f"Module Path: {self.module_path}")
         logger.info(f"Callable Name: {self.callable_name}")
-        logger.info(f'Args: {" ".join(self.args)}')
+        logger.info(f"Args: {' '.join(self.args)}")
 
 
 def submit_jobs(class_to_submit, output_dir, submitit_args, name="fairvit"):
@@ -178,7 +178,7 @@ def submit_jobs(class_to_submit, output_dir, submitit_args, name="fairvit"):
         slurm_partition=submitit_args.slurm_partition,
         slurm_qos=submitit_args.slurm_qos,
         # slurm_account=submitit_args.slurm_account,
-        slurm_additional_parameters=dict(nice=submitit_args.slurm_nice),
+        slurm_additional_parameters={"nice": submitit_args.slurm_nice},
         **kwargs,
     )
     executor.update_parameters(name=name, **executor_params)

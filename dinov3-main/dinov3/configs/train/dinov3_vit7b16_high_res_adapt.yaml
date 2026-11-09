@@ -1,7 +1,7 @@
 MODEL:
   META_ARCHITECTURE: SSLMetaArchCompilableGram
   DEVICE: cuda
-  WEIGHTS: ''
+  WEIGHTS: ""
   DTYPE: float32
 compute_precision:
   param_dtype: bf16
@@ -33,8 +33,8 @@ ibot:
   loss_weight: 1.0
   mask_sample_probability: 0.5
   mask_ratio_min_max:
-  - 0.1
-  - 0.5
+    - 0.1
+    - 0.5
   mask_random_circular_shift: false
   force_masking_even_with_zero_weight: false
   separate_head: true
@@ -92,15 +92,15 @@ student:
   drop_path_rate: 0.4
   layerscale: 1.0e-05
   patch_drop: 0.0
-  pretrained_weights: ''
+  pretrained_weights: ""
   ffn_layer: swiglu64
   ffn_ratio: 3
-  resume_from_teacher_chkpt: ''
+  resume_from_teacher_chkpt: ""
   qkv_bias: false
   proj_bias: true
   ffn_bias: true
   norm_layer: layernormbf16
-  resume_from_teacher_chkpt: ''
+  resume_from_teacher_chkpt: ""
   n_storage_tokens: 4
   untie_cls_and_patch_norms: false
   untie_global_and_local_cls_norm: true
@@ -126,13 +126,13 @@ teacher:
   in_chans: 3
 distillation:
   enabled: false
-  full_cfg_path: ''
-  checkpoint_path: ''
+  full_cfg_path: ""
+  checkpoint_path: ""
 multidistillation:
   enabled: false
 hrft:
   enabled: false
-  checkpoint_path: ''
+  checkpoint_path: ""
 optim:
   epochs: 30
   optimizer: adamw
@@ -149,53 +149,53 @@ optim:
   dino_head_wd_multiplier: 1.0
   layerwise_decay: 0.98
   multi_tensor_optim: true
-  dump_fsdp_weights_path: ''
+  dump_fsdp_weights_path: ""
   adamw_beta1: 0.9
   adamw_beta2: 0.99
 crops:
   global_crops_scale:
-  - 0.32
-  - 1.0
+    - 0.32
+    - 1.0
   local_crops_number: 8
   local_crops_scale:
-  - 0.05
-  - 0.32
+    - 0.05
+    - 0.32
   global_crops_size:
-  - 512
-  - 768
-  - 768
-  - 768
-  - 768
+    - 512
+    - 768
+    - 768
+    - 768
+    - 768
   local_crops_size:
-  - 112
-  - 112
-  - 168
-  - 224
-  - 336
+    - 112
+    - 112
+    - 168
+    - 224
+    - 336
   global_local_crop_pairs_ratios:
-  - 0.3
-  - 0.3
-  - 0.3
-  - 0.05
-  - 0.05
+    - 0.3
+    - 0.3
+    - 0.3
+    - 0.05
+    - 0.05
   gram_teacher_crops_size:
-  - 768
-  - 1152
-  - 1152
-  - 1152
-  - 1152
+    - 768
+    - 1152
+    - 1152
+    - 1152
+    - 1152
   localcrops_subset_of_globalcrops: false
   share_color_jitter: false
   horizontal_flips: false
   gram_teacher_no_distortions: true
   rgb_mean:
-  - 0.485
-  - 0.456
-  - 0.406
+    - 0.485
+    - 0.456
+    - 0.406
   rgb_std:
-  - 0.229
-  - 0.224
-  - 0.225
+    - 0.229
+    - 0.224
+    - 0.225
 checkpointing:
   period: 250
   max_to_keep: 3
